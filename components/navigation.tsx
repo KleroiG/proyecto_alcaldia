@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Menu, X } from "lucide-react"
 import { MuiscaSunIcon } from "./muisca-sun-icon"
 
@@ -66,6 +66,10 @@ export function Navigation() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full max-w-sm bg-background p-6">
+              <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
+              <SheetDescription className="sr-only">
+                Navegación principal del sitio de turismo de Sogamoso
+              </SheetDescription>
               <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                   <Link href="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
@@ -74,6 +78,7 @@ export function Navigation() {
                   </Link>
                   <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
                     <X className="h-6 w-6" />
+                    <span className="sr-only">Cerrar menú</span>
                   </Button>
                 </div>
                 <div className="flex flex-col gap-4">
