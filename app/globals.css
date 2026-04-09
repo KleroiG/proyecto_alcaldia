@@ -4,8 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 /* Sogamoso Tourism - Color Palette */
+/* Primary Burgundy: #60150F (marrón rojizo institucional) */
 /* Deep Emerald Green: #0D6B4C */
-/* Vibrant Red: #C41E3A */
 /* Golden Yellow: #D4A84B */
 /* Clean White: #FFFFFF */
 /* Dark text: #1A1A1A */
@@ -17,38 +17,39 @@
   --card-foreground: oklch(0.15 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.45 0.12 160);
+  --primary: oklch(0.32 0.12 25);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.97 0.005 90);
   --secondary-foreground: oklch(0.15 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.50 0.18 25);
+  --accent: oklch(0.45 0.12 160);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.50 0.18 25);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.90 0 0);
   --input: oklch(0.95 0 0);
-  --ring: oklch(0.45 0.12 160);
-  --chart-1: oklch(0.45 0.12 160);
-  --chart-2: oklch(0.50 0.18 25);
+  --ring: oklch(0.32 0.12 25);
+  --chart-1: oklch(0.32 0.12 25);
+  --chart-2: oklch(0.45 0.12 160);
   --chart-3: oklch(0.72 0.14 85);
-  --chart-4: oklch(0.60 0.10 160);
-  --chart-5: oklch(0.65 0.12 25);
+  --chart-4: oklch(0.40 0.10 25);
+  --chart-5: oklch(0.55 0.10 160);
   --radius: 0.5rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.15 0 0);
-  --sidebar-primary: oklch(0.45 0.12 160);
+  --sidebar-primary: oklch(0.32 0.12 25);
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.97 0.005 90);
   --sidebar-accent-foreground: oklch(0.15 0 0);
   --sidebar-border: oklch(0.90 0 0);
-  --sidebar-ring: oklch(0.45 0.12 160);
+  --sidebar-ring: oklch(0.32 0.12 25);
   
   /* Custom tokens for Sogamoso */
+  --burgundy: oklch(0.32 0.12 25);
+  --burgundy-light: oklch(0.40 0.10 25);
   --emerald: oklch(0.45 0.12 160);
   --emerald-light: oklch(0.55 0.10 160);
-  --red-vibrant: oklch(0.50 0.18 25);
   --gold: oklch(0.72 0.14 85);
   --gold-muted: oklch(0.80 0.10 85);
 }
