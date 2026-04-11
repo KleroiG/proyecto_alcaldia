@@ -66,57 +66,6 @@ export default function EstadisticasPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#6b1d1d] shadow-lg">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <Sun className="h-8 w-8 text-[#d4a017]" />
-            <div className="flex flex-col">
-              <span className="text-lg font-bold leading-tight text-white">
-                Sogamoso
-              </span>
-              <span className="text-xs font-medium leading-tight text-emerald-400">
-                TURISMO Y CULTURA
-              </span>
-            </div>
-          </div>
-
-          {/* Navigation Links */}
-          <nav className="hidden items-center gap-8 md:flex">
-            <a
-              href="#"
-              className="text-sm font-medium text-white/80 transition-colors hover:text-white"
-            >
-              Inicio
-            </a>
-            <a
-              href="#"
-              className="text-sm font-medium text-white/80 transition-colors hover:text-white"
-            >
-              Eventos
-            </a>
-            <a
-              href="#"
-              className="text-sm font-medium text-white/80 transition-colors hover:text-white"
-            >
-              Prestadores
-            </a>
-            <a
-              href="#"
-              className="text-sm font-medium text-white transition-colors"
-            >
-              Estadísticas
-            </a>
-          </nav>
-
-          {/* Admin Button */}
-          <button className="rounded-md border border-white/50 bg-transparent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10">
-            Perfil Admin
-          </button>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-4 pt-24 pb-12 lg:px-8">
         {/* Page Header & Filters */}

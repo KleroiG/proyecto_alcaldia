@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Menu, X } from "lucide-react"
 import { MuiscaSunIcon } from "./muisca-sun-icon"
+import { ROUTES } from "@/lib/routes"
 
 const navLinks = [
-  { href: "/", label: "Inicio" },
-  { href: "@/app/eventos/page", label: "Eventos" },
-  { href: "/prestadores", label: "Prestadores" },
-  { href: "/estadisticas", label: "Estadísticas" },
+  { href: ROUTES.home, label: "Inicio" },
+  { href: ROUTES.eventos, label: "Eventos" },
+  { href: ROUTES.prestadores, label: "Prestadores" },
+  { href: ROUTES.estadisticas, label: "Estadísticas" },
 ]
 
 export function Header() {
