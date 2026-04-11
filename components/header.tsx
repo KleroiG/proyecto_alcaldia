@@ -9,19 +9,19 @@ import { MuiscaSunIcon } from "./muisca-sun-icon"
 
 const navLinks = [
   { href: "/", label: "Inicio" },
-  { href: "/eventos", label: "Eventos" },
+  { href: "@/app/eventos/page", label: "Eventos" },
   { href: "/prestadores", label: "Prestadores" },
   { href: "/estadisticas", label: "Estadísticas" },
 ]
 
-export function Navigation() {
+export function Header() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#60150F] backdrop-blur-md border-b border-white/10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <nav className="flex h-16 items-center justify-between lg:h-20">
-          {/* Logo */}
+          {/* Logo - Redirige al Inicio */}
           <Link href="/" className="flex items-center gap-2 group">
             <MuiscaSunIcon className="h-9 w-9 text-gold transition-transform group-hover:scale-110" />
             <div className="flex flex-col">
@@ -34,7 +34,7 @@ export function Navigation() {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - Rutas principales */}
           <div className="hidden lg:flex lg:items-center lg:gap-8">
             {navLinks.map((link) => (
               <Link
@@ -47,14 +47,16 @@ export function Navigation() {
             ))}
           </div>
 
-          {/* Desktop CTA */}
+          {/* Desktop CTA - Redirige al Panel Administrativo */}
           <div className="hidden lg:flex lg:items-center lg:gap-4">
-            <Button
-              variant="outline"
-              className="border-white/20 bg-transparent text-white hover:bg-white hover:text-[#60150F]"
-            >
-              Iniciar sesión
-            </Button>
+            <Link href="/admin">
+              <Button
+                variant="outline"
+                className="border-white/20 bg-transparent text-white hover:bg-white hover:text-[#60150F]"
+              >
+                Iniciar sesión
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu */}
@@ -65,7 +67,7 @@ export function Navigation() {
                 <span className="sr-only">Abrir menú</span>
               </Button>
             </SheetTrigger>
-            {/* SheetContent ajustado para mantener la coherencia visual */}
+            
             <SheetContent side="right" className="w-full max-w-sm bg-[#60150F] border-l border-white/10 p-6 text-white">
               <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
               <SheetDescription className="sr-only">
@@ -94,9 +96,12 @@ export function Navigation() {
                     </Link>
                   ))}
                 </div>
-                <Button className="mt-4 bg-emerald-600 text-white hover:bg-emerald-500 border-none">
-                  Iniciar sesión
-                </Button>
+                {/* Botón Iniciar Sesión móvil */}
+                <Link href="/admin" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full mt-4 bg-emerald-600 text-white hover:bg-emerald-500 border-none">
+                    Iniciar sesión
+                  </Button>
+                </Link>
               </div>
             </SheetContent>
           </Sheet>
