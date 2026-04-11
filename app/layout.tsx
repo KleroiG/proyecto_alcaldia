@@ -3,6 +3,7 @@ import { DM_Sans, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
 
 const dmSans = DM_Sans({ 
   subsets: ["latin"],
@@ -51,6 +52,7 @@ export default function RootLayout({
         <Header /> 
         {children}
         <Analytics />
+        <Footer/>
       </body>
     </html>
   )

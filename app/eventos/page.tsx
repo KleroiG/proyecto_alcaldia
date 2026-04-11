@@ -116,15 +116,6 @@ export default function EventsPage() {
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-[#6b1d1d] py-8 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-white/80">
-            © 2024 Sogamoso Turismo y Cultura. Todos los derechos reservados.
-          </p>
-        </div>
-      </footer>
     </div>
   )
 }
