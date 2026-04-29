@@ -4,4 +4,5 @@ export const ROUTES = {
   prestadores:   "/prestadores_servicios",
   estadisticas:  "/estadisticas",
   admin:         "/vista_admin",
+  autenticacion: "/autenticacion",
 } as const

@@ -50,7 +50,7 @@ export function Header() {
 
           {/* Desktop CTA - Redirige al Panel Administrativo */}
           <div className="hidden lg:flex lg:items-center lg:gap-4">
-            <Link href="/admin">
+            <Link href="/autenticacion">
               <Button
                 variant="outline"
                 className="border-white/20 bg-transparent text-white hover:bg-white hover:text-[#60150F]"
@@ -98,7 +98,7 @@ export function Header() {
                   ))}
                 </div>
                 {/* Botón Iniciar Sesión móvil */}
-                <Link href="/admin" onClick={() => setIsOpen(false)}>
+                <Link href="/" onClick={() => setIsOpen(false)}>
                   <Button className="w-full mt-4 bg-emerald-600 text-white hover:bg-emerald-500 border-none">
                     Iniciar sesión
                   </Button>
