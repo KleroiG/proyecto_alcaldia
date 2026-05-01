@@ -1,5 +1,5 @@
-import { EventFilters } from "@/app/eventos/event-filters"
-import { EventCard, type EventStatus } from "@/app/eventos/event-card"
+import { EventFilters } from "@/app/(public)/eventos/event-filters"
+import { EventCard, type EventStatus } from "@/app/(public)/eventos/event-card"
 
 const events: Array<{
   id: string

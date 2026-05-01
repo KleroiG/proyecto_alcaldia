@@ -7,23 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import {Table,TableBody,TableCell,TableHead,TableHeader,TableRow,} from "@/components/ui/table"
+import {Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle,DialogTrigger,} from "@/components/ui/dialog"
 
 // Sample events data
 const eventsData = [
@@ -107,7 +92,7 @@ function formatDate(dateString: string) {
   return `${parseInt(day, 10)} ${months[monthIndex]} ${year}`
 }
 
-export function EventsAgenda() {
+export function EventosAdmin() {
   const [events] = useState<Event[]>(eventsData)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [postEventDialogOpen, setPostEventDialogOpen] = useState(false)

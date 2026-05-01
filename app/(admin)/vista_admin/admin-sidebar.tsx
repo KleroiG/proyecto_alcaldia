@@ -3,16 +3,7 @@
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
-import {
-  LayoutDashboard,
-  MapPin,
-  Users,
-  Palette,
-  Calendar,
-  Shield,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react"
+import { LayoutDashboard, MapPin, Users, Palette, Calendar, Shield, ChevronLeft, ChevronRight, } from "lucide-react"
 
 interface NavItem {
   label: string
@@ -78,7 +69,7 @@ export function AdminSidebar({
   return (
     <aside
       className={cn(
-        "flex h-screen flex-col bg-[#60150F] text-white transition-all duration-300 border-r border-white/10",
+        "sticky top-0 flex h-screen flex-col bg-[#60150F] text-white transition-all duration-300 border-r border-white/10",
         collapsed ? "w-20" : "w-72"
       )}
     >

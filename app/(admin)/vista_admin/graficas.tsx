@@ -102,7 +102,7 @@ const years = [
   { value: "2022", label: "2022" },
 ]
 
-export function MetricsCharts() {
+export function GraficasAdmin() {
   const [selectedMonth, setSelectedMonth] = useState("all")
   const [selectedYear, setSelectedYear] = useState("2024")
 

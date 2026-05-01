@@ -94,6 +94,8 @@ export default function autenticacion() {
                 </motion.div>
               )}
 
+              {/* Formulario Registro */}
+              {/* Nombre completo */}
               {!isLogin && (
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700">Nombre completo</label>
@@ -111,6 +113,7 @@ export default function autenticacion() {
                 </div>
               )}
 
+              {/* Correo Electrónico */}
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
                 <div className="relative mt-1">
@@ -126,6 +129,7 @@ export default function autenticacion() {
                 </div>
               </div>
 
+              {/* Contraseña */}
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700">Contraseña</label>
                 <div className="relative mt-1">
@@ -143,7 +147,7 @@ export default function autenticacion() {
                 </div>
               </div>
 
-              {/* NUEVO CAMPO: Confirmar Contraseña */}
+              {/* Confirmar Contraseña */}
               {!isLogin && (
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
@@ -171,13 +175,14 @@ export default function autenticacion() {
                 </motion.div>
               )}
 
+              {/* Botón de Iniciar Sesión o Crear Cuenta */}
               {isLogin && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <input id="rem" type="checkbox" className="h-4 w-4 text-[#00A859] border-gray-300 rounded cursor-pointer" />
                     <label htmlFor="rem" className="ml-2 block text-sm text-gray-900 cursor-pointer">Recordarme</label>
                   </div>
-                  <a href="#" className="text-sm font-medium text-[#7B1B1B] hover:underline">¿Olvidaste tu contraseña?</a>
+                  <a href="/vista_admin" className="text-sm font-medium text-[#7B1B1B] hover:underline">¿Olvidaste tu contraseña?</a>
                 </div>
               )}
 

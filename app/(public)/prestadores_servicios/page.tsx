@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { ProviderCard, type Provider, type ProviderCategory } from "@/app/prestadores_servicios/provider-card"
-import { ProviderFilters } from "@/app/prestadores_servicios/provider-filters"
+import { ProviderCard, type Provider, type ProviderCategory } from "@/app/(public)/prestadores_servicios/provider-card"
+import { ProviderFilters } from "@/app/(public)/prestadores_servicios/provider-filters"
 
 // Sample provider data
 const providers: Provider[] = [

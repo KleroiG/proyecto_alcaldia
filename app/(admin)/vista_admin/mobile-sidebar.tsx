@@ -78,17 +78,17 @@ export function MobileSidebar({
           <span className="sr-only">Abrir menú</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 bg-sidebar p-0">
-        <SheetHeader className="border-b border-sidebar-border px-4 py-5">
+      <SheetContent side="left" className="w-72 bg-[#60150F] p-0 text-white border-r border-white/10 ">
+        <SheetHeader className="border-b border-white/10 px-4 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent">
-              <MapPin className="size-6 text-accent" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
+              <MapPin className="size-6 text-yellow-400" />
             </div>
             <div className="flex flex-col">
-              <SheetTitle className="text-base font-bold text-sidebar-foreground">
+              <SheetTitle className="text-base font-bold text-white tracking-tight">
                 Turismo Sogamoso
               </SheetTitle>
-              <SheetDescription className="text-xs text-sidebar-foreground/70">
+              <SheetDescription className="text-xs text-white/50 font-medium uppercase tracking-wider">
                 Panel de Administración
               </SheetDescription>
             </div>
@@ -104,14 +104,14 @@ export function MobileSidebar({
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                    ? "bg-white/15 text-white shadow-sm"
+                    : "text-white/70 hover:bg-white/5 hover:text-white"
                 )}
               >
                 <span
                   className={cn(
                     "shrink-0",
-                    isActive ? "text-accent" : "text-sidebar-foreground/70"
+                    isActive ? "text-yellow-400" : "text-white/50"
                   )}
                 >
                   {item.icon}
@@ -120,8 +120,7 @@ export function MobileSidebar({
                 {item.superadminOnly && isSuperadmin && (
                   <Badge
                     variant="secondary"
-                    className="ml-auto bg-accent/20 text-accent text-[10px] px-1.5"
-                  >
+                    className="ml-auto bg-yellow-400/20 text-yellow-400 border-none text-[10px] px-1.5"                  >
                     Superadmin
                   </Badge>
                 )}
