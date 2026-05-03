@@ -1,4 +1,4 @@
-import { MuiscaSunIcon } from "./muisca-sun-icon"
+import { MuiscaSunIcon } from "./icon-sol"
 import { Mountain, Users, Calendar, Award } from "lucide-react"
 
 const highlights = [

@@ -5,14 +5,16 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Menu, X } from "lucide-react"
-import { MuiscaSunIcon } from "./muisca-sun-icon"
+import { MuiscaSunIcon } from "./icon-sol"
 import { ROUTES } from "@/lib/routes"
 
 const navLinks = [
   { href: ROUTES.home, label: "Inicio" },
+  { href: ROUTES.atractivos, label: "Atractivos" },
   { href: ROUTES.eventos, label: "Eventos" },
   { href: ROUTES.prestadores, label: "Prestadores" },
   { href: ROUTES.estadisticas, label: "Estadísticas" },
+  
 ]
 
 export function Header() {

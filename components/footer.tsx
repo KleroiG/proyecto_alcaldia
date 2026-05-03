@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { MuiscaSunIcon } from "./muisca-sun-icon"
+import { MuiscaSunIcon } from "./icon-sol"
 import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react"
 
 const footerLinks = {

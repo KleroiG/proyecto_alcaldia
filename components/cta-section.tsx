@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { MuiscaSunIcon } from "./muisca-sun-icon"
+import { MuiscaSunIcon } from "./icon-sol"
 import { ArrowRight, Download, Mail } from "lucide-react"
 
 export function CTASection() {

@@ -1,7 +1,7 @@
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { MapPin, Calendar, Compass } from "lucide-react"
-import { MuiscaSunIcon } from "./muisca-sun-icon"
+import { MuiscaSunIcon } from "./icon-sol"
 
 export function HeroSection() {
   return (

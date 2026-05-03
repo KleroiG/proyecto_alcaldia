@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { AttractionCard } from "./attraction-card"
 import { Button } from "@/components/ui/button"
-import { MuiscaSunIcon } from "./muisca-sun-icon"
+import { MuiscaSunIcon } from "./icon-sol"
 import { Filter, ChevronRight } from "lucide-react"
 
 const categories = [
