@@ -1,6 +1,5 @@
 "use client"
 
-export const dynamic = "force-dynamic"
 import { useEffect ,useState } from "react"
 import { ProviderCard, type Provider, type ProviderCategory } from "@/app/(public)/prestadores_servicios/provider-card"
 import { ProviderFilters } from "@/app/(public)/prestadores_servicios/provider-filters"
