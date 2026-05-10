@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect ,useState } from "react"
+import { useEffect, useState, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { ProviderCard, type Provider, type ProviderCategory } from "@/app/(public)/prestadores_servicios/provider-card"
 import { ProviderFilters } from "@/app/(public)/prestadores_servicios/provider-filters"
-import { useSearchParams } from "next/navigation"
 
 
 // Sample provider data
@@ -85,15 +85,16 @@ const providers: Provider[] = [
 const categoryMap: Record<string, ProviderCategory | null> = {
   all: null,
   hoteles: "Hotel",
+  hospedaje: "Hotel", // Soporte para el link del footer
   restaurantes: "Restaurante",
   agencias: "Agencia",
   guias: "Guía",
   artesanos: "Artesano",
 }
 
-export default function PrestadoresPage() {
+// 1. Componente de lógica interna que consume useSearchParams
+function PrestadoresContent() {
   const searchParams = useSearchParams()
-
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -104,12 +105,8 @@ export default function PrestadoresPage() {
 
   const filteredProviders = providers.filter((provider) => {
     const categoryFilter = categoryMap[selectedCategory]
-
-    const matchesCategory =
-      !categoryFilter || provider.category === categoryFilter
-
-    const matchesSearch =
-      !searchQuery ||
+    const matchesCategory = !categoryFilter || provider.category === categoryFilter
+    const matchesSearch = !searchQuery || 
       provider.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       provider.description.toLowerCase().includes(searchQuery.toLowerCase())
 
@@ -117,66 +114,56 @@ export default function PrestadoresPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 pb-12 pt-24 lg:px-8 lg:pt-28">
-        {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#1a1a1a] md:text-3xl lg:text-4xl text-balance">
-            Directorio de Prestadores de Servicios
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Encuentra los mejores servicios turísticos en Sogamoso
-          </p>
-        </div>
-
-        {/* Filters */}
-        <div className="mb-8">
-          <ProviderFilters
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-          />
-        </div>
-
-        {/* Results Count */}
-        <p className="mb-6 text-sm text-gray-500">
-          {filteredProviders.length} {filteredProviders.length === 1 ? "resultado" : "resultados"} encontrados
+    <main className="mx-auto max-w-7xl px-4 pb-12 pt-24 lg:px-8 lg:pt-28">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-[#1a1a1a] md:text-3xl lg:text-4xl text-balance">
+          Directorio de Prestadores de Servicios
+        </h1>
+        <p className="mt-2 text-gray-600">
+          Encuentra los mejores servicios turísticos en Sogamoso
         </p>
+      </div>
 
-        {/* Provider Cards Grid */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {filteredProviders.map((provider) => (
-            <ProviderCard key={provider.id} provider={provider} />
-          ))}
+      <div className="mb-8">
+        <ProviderFilters
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
+      </div>
+
+      <p className="mb-6 text-sm text-gray-500">
+        {filteredProviders.length} {filteredProviders.length === 1 ? "resultado" : "resultados"} encontrados
+      </p>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {filteredProviders.map((provider) => (
+          <ProviderCard key={provider.id} provider={provider} />
+        ))}
+      </div>
+
+      {filteredProviders.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <h3 className="text-lg font-semibold text-gray-900">No se encontraron resultados</h3>
+          <p className="mt-1 text-sm text-gray-500">Intenta ajustar los filtros o la búsqueda</p>
         </div>
+      )}
+    </main>
+  )
+}
 
-        {/* Empty State */}
-        {filteredProviders.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 rounded-full bg-gray-100 p-4">
-              <svg
-                className="size-8 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">No se encontraron resultados</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Intenta ajustar los filtros o la búsqueda
-            </p>
-          </div>
-        )}
-      </main>
+// 2. Exportación principal envuelta en Suspense para habilitar el build estático
+export default function PrestadoresPage() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Suspense fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <p className="text-gray-500 animate-pulse">Cargando directorio de servicios...</p>
+        </div>
+      }>
+        <PrestadoresContent />
+      </Suspense>
     </div>
   )
 }
