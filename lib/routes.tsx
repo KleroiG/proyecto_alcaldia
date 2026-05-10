@@ -5,4 +5,5 @@ export const ROUTES = {
   estadisticas:  "/estadisticas",
   admin:         "/vista_admin",
   autenticacion: "/autenticacion",
+  atractivos:      "/atractivos",
 } as const

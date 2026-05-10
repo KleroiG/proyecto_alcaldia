@@ -2,17 +2,20 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
-import { Menu, X } from "lucide-react"
-import { MuiscaSunIcon } from "./muisca-sun-icon"
+import { Menu } from "lucide-react"
+import { MuiscaSunIcon } from "./icon-sol"
 import { ROUTES } from "@/lib/routes"
 
 const navLinks = [
   { href: ROUTES.home, label: "Inicio" },
+  { href: ROUTES.atractivos, label: "Atractivos" },
   { href: ROUTES.eventos, label: "Eventos" },
   { href: ROUTES.prestadores, label: "Prestadores" },
   { href: ROUTES.estadisticas, label: "Estadísticas" },
+
 ]
 
 export function Header() {
@@ -24,15 +27,13 @@ export function Header() {
         <nav className="flex h-16 items-center justify-between lg:h-20">
           {/* Logo - Redirige al Inicio */}
           <Link href="/" className="flex items-center gap-2 group">
-            <MuiscaSunIcon className="h-9 w-9 text-gold transition-transform group-hover:scale-110" />
-            <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight text-white leading-tight">
-                Sogamoso
-              </span>
-              <span className="text-[10px] font-medium uppercase tracking-widest text-emerald-400">
-                Turismo y Cultura
-              </span>
-            </div>
+            <Image
+              src="/images/LogoEscudoSogamoso.png"
+              alt="Logo Sogamoso"
+              width={200}
+              height={200}
+              className="transition-transform duration-300 group-hover:rotate-8"
+            />
           </Link>
 
           {/* Desktop Navigation - Rutas principales */}
@@ -68,7 +69,7 @@ export function Header() {
                 <span className="sr-only">Abrir menú</span>
               </Button>
             </SheetTrigger>
-            
+
             <SheetContent side="right" className="w-full max-w-sm bg-[#60150F] border-l border-white/10 p-6 text-white">
               <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
               <SheetDescription className="sr-only">
@@ -80,10 +81,6 @@ export function Header() {
                     <MuiscaSunIcon className="h-8 w-8 text-gold" />
                     <span className="text-lg font-bold text-white">Sogamoso</span>
                   </Link>
-                  <Button variant="ghost" size="icon" className="text-white" onClick={() => setIsOpen(false)}>
-                    <X className="h-6 w-6" />
-                    <span className="sr-only">Cerrar menú</span>
-                  </Button>
                 </div>
                 <div className="flex flex-col gap-4">
                   {navLinks.map((link) => (
@@ -98,7 +95,7 @@ export function Header() {
                   ))}
                 </div>
                 {/* Botón Iniciar Sesión móvil */}
-                <Link href="/" onClick={() => setIsOpen(false)}>
+                <Link href="/autenticacion" onClick={() => setIsOpen(false)}>
                   <Button className="w-full mt-4 bg-emerald-600 text-white hover:bg-emerald-500 border-none">
                     Iniciar sesión
                   </Button>
