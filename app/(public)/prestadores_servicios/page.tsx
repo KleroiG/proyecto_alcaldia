@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect ,useState } from "react"
 import { ProviderCard, type Provider, type ProviderCategory } from "@/app/(public)/prestadores_servicios/provider-card"
 import { ProviderFilters } from "@/app/(public)/prestadores_servicios/provider-filters"
+import { useSearchParams } from "next/navigation"
+
 
 // Sample provider data
 const providers: Provider[] = [
@@ -90,12 +92,22 @@ const categoryMap: Record<string, ProviderCategory | null> = {
 }
 
 export default function PrestadoresPage() {
+  const searchParams = useSearchParams()
+
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
 
+  useEffect(() => {
+    const category = searchParams.get("category") || "all"
+    setSelectedCategory(category)
+  }, [searchParams])
+
   const filteredProviders = providers.filter((provider) => {
     const categoryFilter = categoryMap[selectedCategory]
-    const matchesCategory = !categoryFilter || provider.category === categoryFilter
+
+    const matchesCategory =
+      !categoryFilter || provider.category === categoryFilter
+
     const matchesSearch =
       !searchQuery ||
       provider.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

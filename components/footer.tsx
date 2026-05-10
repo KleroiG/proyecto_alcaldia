@@ -1,24 +1,21 @@
 import Link from "next/link"
-import { MuiscaSunIcon } from "./icon-sol"
+import Image from "next/image"
 import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react"
 
 const footerLinks = {
   explore: [
     { label: "Atractivos turísticos", href: "/atractivos" },
-    { label: "Rutas y circuitos", href: "/rutas" },
-    { label: "Gastronomía", href: "/gastronomia" },
-    { label: "Artesanías", href: "/artesanias" },
+    { label: "Eventos", href: "/eventos" },
   ],
-  services: [
-    { label: "Hospedaje", href: "/hospedaje" },
-    { label: "Restaurantes", href: "/restaurantes" },
-    { label: "Transporte", href: "/transporte" },
-    { label: "Guías turísticos", href: "/guias" },
-  ],
+services: [
+  { label: "Hospedaje", href: "/prestadores_servicios?category=hoteles" },
+  { label: "Restaurantes", href: "/prestadores_servicios?category=restaurantes" },
+  { label: "Transporte", href: "/prestadores_servicios?category=agencias" },
+  { label: "Guías turísticos", href: "/prestadores_servicios?category=guias" },
+],
   about: [
     { label: "Sobre Sogamoso", href: "/sobre-sogamoso" },
     { label: "Historia", href: "/historia" },
-    { label: "Cultura Muisca", href: "/cultura-muisca" },
     { label: "Contacto", href: "/contacto" },
   ],
 }
@@ -39,18 +36,18 @@ export function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-3">
-              <MuiscaSunIcon className="h-10 w-10 text-gold" />
-              <div className="flex flex-col">
-                <span className="text-xl font-bold text-background">Sogamoso</span>
-                <span className="text-xs uppercase tracking-widest text-gold">
-                  Turismo y Cultura
-                </span>
-              </div>
+              <Image
+                src="/images/LogoEscudoSogamoso.png"
+                alt="Logo Sogamoso"
+                width={250}
+                height={250}
+                className="transition-transform duration-300 group-hover:rotate-8"
+              />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-background/70">
               Descubre la magia de la Ciudad del Sol. Patrimonio cultural, naturaleza exuberante y la calidez de la gente boyacense te esperan.
             </p>
-            
+
             {/* Contact Info */}
             <div className="mt-6 space-y-2">
               <a href="tel:+5786780000" className="flex items-center gap-2 text-sm text-background/70 hover:text-gold transition-colors">
