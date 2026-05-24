@@ -23,12 +23,14 @@ interface NavItem {
 
 interface MobileSidebarProps {
   isSuperadmin?: boolean
+  allowedItems?: string[]
   activeItem?: string
   onNavigate?: (item: string) => void
 }
 
 export function MobileSidebar({
-  isSuperadmin = true,
+  isSuperadmin = false,
+  allowedItems,
   activeItem = "dashboard",
   onNavigate,
 }: MobileSidebarProps) {
@@ -66,9 +68,13 @@ export function MobileSidebar({
     },
   ]
 
-  const filteredNavItems = navItems.filter(
-    (item) => !item.superadminOnly || isSuperadmin
-  )
+  const filteredNavItems = navItems.filter((item) => {
+    if (item.superadminOnly && !isSuperadmin) {
+      return false
+    }
+
+    return !allowedItems || allowedItems.includes(item.href)
+  })
 
   return (
     <Sheet>

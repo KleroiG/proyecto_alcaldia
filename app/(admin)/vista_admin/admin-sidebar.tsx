@@ -15,6 +15,7 @@ interface NavItem {
 
 interface AdminSidebarProps {
   isSuperadmin?: boolean
+  allowedItems?: string[]
   activeItem?: string
   onNavigate?: (item: string) => void
   collapsed?: boolean
@@ -22,7 +23,8 @@ interface AdminSidebarProps {
 }
 
 export function AdminSidebar({
-  isSuperadmin = true,
+  isSuperadmin = false,
+  allowedItems,
   activeItem = "dashboard",
   onNavigate,
   collapsed = false,
@@ -62,9 +64,13 @@ export function AdminSidebar({
     },
   ]
 
-  const filteredNavItems = navItems.filter(
-    (item) => !item.superadminOnly || isSuperadmin
-  )
+  const filteredNavItems = navItems.filter((item) => {
+    if (item.superadminOnly && !isSuperadmin) {
+      return false
+    }
+
+    return !allowedItems || allowedItems.includes(item.href)
+  })
 
   return (
     <aside
