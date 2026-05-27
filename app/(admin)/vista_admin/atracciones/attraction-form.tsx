@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { X, Upload, ArrowLeft, Loader2, ImageIcon } from "lucide-react"
-import { Attraction } from "./attractions-table"
+import { Attraction } from "./page"
 
 // Ajustamos la interfaz para recibir fotos previas y el array de eliminación
 interface AttractionFormProps {
