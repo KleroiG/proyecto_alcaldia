@@ -42,7 +42,7 @@ export function AdminSidebar({
     {
       label: "Prestadores de Servicios",
       icon: <Users className="size-5" />,
-      href: "providers",
+      href: "prestadores",
     },
     {
       label: "Servicios Culturales",

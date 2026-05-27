@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MapPin, Phone } from "lucide-react"
 
-export type ProviderCategory = "Artesano" | "Hotel" | "Restaurante" | "Agencia" | "Guía"
+export type ProviderCategory = "Hotel" | "Restaurante" | "Agencia"
 
 export interface Provider {
   id: string
@@ -15,12 +15,11 @@ export interface Provider {
   imageUrl: string
 }
 
+// 2. Paleta de colores ajustada e institucional
 const categoryColors: Record<ProviderCategory, string> = {
-  Artesano: "bg-[#D4A855] text-[#1a1a1a]",
   Hotel: "bg-[#10B981] text-white",
   Restaurante: "bg-[#F97316] text-white",
   Agencia: "bg-[#6366F1] text-white",
-  Guía: "bg-[#8B5CF6] text-white",
 }
 
 interface ProviderCardProps {

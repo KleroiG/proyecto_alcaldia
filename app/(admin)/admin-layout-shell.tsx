@@ -8,18 +8,21 @@ import { MobileSidebar } from "../(admin)/vista_admin/mobile-sidebar"
 import { RoleManagement } from "./vista_admin/gestor_roles/role-management"
 import { EventosAdmin } from "./vista_admin/eventos/eventos"
 import { GraficasAdmin } from "./vista_admin/estadisticas/graficas"
-import  AdminTourismPage  from "./vista_admin/atracciones/page"
+import AdminTourismPage from "./vista_admin/atracciones/controlador"
+import AdminPrestadoresPage from "./vista_admin/prestadores_servicios/page"
 
 
 export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
-    const [activeItem, setActiveItem] = useState("roles") // "roles" por defecto según tu imagen
+    const [activeItem, setActiveItem] = useState("roles")
     const [collapsed, setCollapsed] = useState(false)
 
     // Mapeo de secciones para escalabilidad
     const renderContent = () => {
         switch (activeItem) {
             case "attractions":
-                return <AdminTourismPage />; 
+                return <AdminTourismPage />;
+            case "prestadores":
+                return <AdminPrestadoresPage />;
             case "roles":
                 return <RoleManagement />;
             case "events":
