@@ -3,13 +3,13 @@
 import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Search, Plus, Pencil, Trash2, MapPin, ImageIcon } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
 
 export interface Attraction {
   id: string
@@ -24,15 +24,18 @@ export interface Attraction {
   whatsapp?: string
   instagram?: string
   facebook?: string
+  isvisible?: boolean
   website?: string
   coordinates?: string
   mapsLink?: string
+
 }
 
 interface AttractionsTableProps {
   attractions: Attraction[]
   isLoading: boolean
   onEdit: (attraction: Attraction) => void
+  onToggleActive: (id: string, isvisible: boolean) => void
   onDelete: (id: string) => void
   onAddClick: () => void
 }
@@ -57,6 +60,7 @@ const categoryColors: Record<string, string> = {
 export function AttractionsTable({
   attractions,
   isLoading,
+  onToggleActive,
   onEdit,
   onDelete,
   onAddClick,
@@ -85,6 +89,7 @@ export function AttractionsTable({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
       {/* Table Header */}
       <div className="bg-gradient-to-r from-[#6b1d1d] to-[#8b2d2d] px-6 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -103,6 +108,33 @@ export function AttractionsTable({
             <Plus className="mr-2 h-4 w-4" />
             Agregar Atractivo
           </Button>
+        </div>
+      </div>
+      <br></br>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5 mr-5 ml-5">
+        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+          <p className="text-sm text-gray-500 mb-1">Total Atractivos</p>
+          <p className="text-2xl font-bold text-gray-900">
+            {attractions.length}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+          <p className="text-sm text-gray-500 mb-1">Activos</p>
+          <p className="text-2xl font-bold text-emerald-600">
+            {attractions.filter((a) => a.isvisible).length}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+          <p className="text-sm text-gray-500 mb-1">Inactivos</p>
+          <p className="text-2xl font-bold text-gray-400">
+            {attractions.filter((a) => !a.isvisible).length}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+          <p className="text-sm text-gray-500 mb-1">Categorías</p>
+          <p className="text-2xl font-bold text-[#d4a84b]">
+            {new Set(attractions.map((a) => a.category)).size}
+          </p>
         </div>
       </div>
 
@@ -135,20 +167,21 @@ export function AttractionsTable({
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <Table>
+        <Table className="table-fixed w-full">
           <TableHeader>
             <TableRow className="bg-gray-50 hover:bg-gray-50">
               <TableHead className="w-[80px]">Imagen</TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead className="hidden md:table-cell">Categoría</TableHead>
+              <TableHead className="w-[28%]" >Nombre</TableHead>
+              <TableHead className="hidden md:table-cell w-[18%]">Categoría</TableHead>
               <TableHead className="hidden lg:table-cell">Ubicación</TableHead>
+              <TableHead className="text-center">Estado</TableHead>
               <TableHead className="text-right w-[160px] pr-10">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               // Loading skeletons
-              Array.from({ length: 4 }).map((_, index) => (
+              Array.from({ length: 5 }).map((_, index) => (
                 <TableRow key={index}>
                   <TableCell>
                     <Skeleton className="h-12 w-12 rounded-lg" />
@@ -163,13 +196,16 @@ export function AttractionsTable({
                     <Skeleton className="h-4 w-[150px]" />
                   </TableCell>
                   <TableCell>
-                    <Skeleton className="h-8 w-20 ml-auto" />
+                    <Skeleton className="h-8 w-20 ml-auto mr-11" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-20 ml-auto mr-3" />
                   </TableCell>
                 </TableRow>
               ))
             ) : filteredAttractions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-32 text-center">
+                <TableCell colSpan={5} className="h-32 text-center">
                   <div className="flex flex-col items-center justify-center text-gray-500">
                     <ImageIcon className="h-10 w-10 mb-2 text-gray-300" />
                     <p className="font-medium">No se encontraron atractivos</p>
@@ -229,6 +265,25 @@ export function AttractionsTable({
                       <MapPin className="h-3.5 w-3.5 text-[#d4a84b]" />
                       <span className="text-sm truncate max-w-[140px]">
                         {attraction.address}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-center gap-2">
+                      <Switch
+                        checked={attraction.isvisible}
+                        onCheckedChange={(checked) =>
+                          onToggleActive(attraction.id, checked)
+                        }
+                        aria-label={`${attraction.isvisible ? "Desactivar" : "Activar"} ${attraction.name}`}
+                      />
+                      <span
+                        className={`text-xs font-medium ${attraction.isvisible
+                          ? "text-emerald-600"
+                          : "text-gray-400"
+                          }`}
+                      >
+                        {attraction.isvisible ? "Activo" : "Inactivo"}
                       </span>
                     </div>
                   </TableCell>

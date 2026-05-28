@@ -8,6 +8,7 @@ import { Filter, ChevronRight, Loader2 } from "lucide-react"
 import { categories } from "./data"
 import type { AttractionCategory, Attraction } from "./types"
 import { AttractionCard } from "./attraction-card"
+import { useAlert } from "@/components/global-alert"
 import { ROUTES } from "@/lib/routes"
 
 // Definimos la estructura exacta que viene de tu backend en Laravel
@@ -35,6 +36,8 @@ export default function AttractionsSection() {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const router = useRouter()
 
+  const { showAlert } = useAlert()
+
   const handleNavigateToDetail = (id: number | string) => {
     router.push(`${ROUTES.atractivos}/${id}`)
   }
@@ -55,8 +58,13 @@ export default function AttractionsSection() {
         if (result.success && result.data) {
           // MAPEADOR: Transformamos el formato relacional de Laravel al formato plano del Card
           // Modifica esta sección dentro del result.data.map en tu page.tsx:
+          const visibleItems = result.data.filter((item: any) => {
+            if (!item) return false;
+            return item.isvisible === undefined || Boolean(item.isvisible) === true;
+          });
 
-          const mappedData: Attraction[] = result.data.map((item: BackendAtractivo) => {
+
+          const mappedData: Attraction[] = (visibleItems || []).map((item: BackendAtractivo) => {
 
             let imageUrl = "https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?q=80&w=800"; // Imagen por defecto
 
@@ -81,8 +89,7 @@ export default function AttractionsSection() {
               id: item.id_atractivo_turistico,
               title: item.nombre,
               description: item.descripcion || "Sin descripción disponible.",
-              image: imageUrl, // <-- Ahora llevará el link directo optimizado
-              rating: 5.0,
+              image: imageUrl,
               category: (item.tipo as any) || "Patrimonio",
               distance: item.direccion ? item.direccion.direccion : "Sogamoso, Boyacá",
               duration: item.horario || "Horario flexible",
@@ -94,6 +101,7 @@ export default function AttractionsSection() {
         }
       } catch (error) {
         console.error("Error al obtener los atractivos:", error);
+        showAlert("error", "Error de conexión", "No se pudieron cargar los datos del servidor.")
       } finally {
         setIsLoading(false);
       }
@@ -137,10 +145,6 @@ export default function AttractionsSection() {
               Descubre la riqueza histórica, natural y arqueológica del principal centro cultural de Boyacá.
             </p>
           </div>
-          <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white transition-colors">
-            Ver Mapa Turístico
-            <ChevronRight className="ml-1 h-4 w-4" />
-          </Button>
         </header>
 
         <nav className="mb-10 flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide" aria-label="Filtrar atractivos por categoría">

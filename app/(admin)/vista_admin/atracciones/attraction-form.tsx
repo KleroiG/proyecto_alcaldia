@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { useAlert } from "@/components/global-alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { X, Upload, ArrowLeft, Loader2, ImageIcon } from "lucide-react"
 import { Attraction } from "./page"
+
 
 // Ajustamos la interfaz para recibir fotos previas y el array de eliminación
 interface AttractionFormProps {
@@ -38,6 +40,9 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
   const [errors, setErrors] = useState<Record<string, boolean>>({})
   const [dragActive, setDragActive] = useState(false)
   const [charCount, setCharCount] = useState(attraction?.description?.length || 0)
+
+  //Alertas
+  const { showAlert } = useAlert()
 
   // 1. ESTADOS PARA LAS IMÁGENES
   // Imágenes que el usuario acaba de seleccionar desde su PC
@@ -87,9 +92,18 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    const files = Array.from(e.dataTransfer.files).filter((file) => file.type.startsWith("image/"))
-    addImages(files)
-  }, [])
+
+    const allFiles = Array.from(e.dataTransfer.files)
+    const validFiles = allFiles.filter((file) => file.type.startsWith("image/"))
+
+    if (validFiles.length < allFiles.length) {
+      showAlert("warning", "Archivos omitidos", "Solo se permiten imágenes. Se ignoraron los formatos no válidos.")
+    }
+
+    if (validFiles.length > 0) {
+      addImages(validFiles)
+    }
+  }, [showAlert])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -129,8 +143,16 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
     if (!formData.description.trim()) newErrors.description = true
     if (!formData.category) newErrors.category = true
     if (!formData.address.trim()) newErrors.address = true
+
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+
+    const isValid = Object.keys(newErrors).length === 0
+
+    if (!isValid) {
+      showAlert("warning", "Campos obligatorios", "Por favor, completa todos los campos marcados en rojo antes de guardar.")
+    }
+
+    return isValid
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,14 +165,19 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
       await onSave({
         ...formData,
         imageFiles,
-        fotosAEliminar, // Pasamos el array de fotos a eliminar al padre
+        fotosAEliminar,
       })
+      showAlert("success", "Atractivo guardado", "La información se ha registrado correctamente en el sistema.")
+
     } catch (error) {
-      console.error(error)
+      console.error("Error al guardar el atractivo:", error)
+      showAlert("error", "Error de conexión", "Ocurrió un problema al intentar guardar los datos. Inténtalo nuevamente.")
     } finally {
       setIsSubmitting(false)
     }
   }
+
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Form Header */}

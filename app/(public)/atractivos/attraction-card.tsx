@@ -34,7 +34,7 @@ export function AttractionCard({ attraction, onLearnMore }: AttractionCardProps)
       {/* Image Container */}
       <div className={cn("relative overflow-hidden", featured ? "h-64 md:h-72" : "h-52")}>
         <Image
-          src={displayImage} // 👈 Usamos el fallback seguro
+          src={displayImage} 
           alt={`Imagen representativa de ${title || "Atractivo Turístico"}`}
           fill
           priority={featured}
@@ -53,7 +53,7 @@ export function AttractionCard({ attraction, onLearnMore }: AttractionCardProps)
         </Badge>
 
         {/* Rating con contraste mejorado */}
-        {displayRating > 0 && ( // 👈 Solo muestra el rating si es mayor a 0
+        {displayRating > 0 && ( 
           <div className="absolute top-4 right-4 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-sm font-bold shadow-sm">
             <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
             <span className="text-slate-900">{displayRating.toFixed(1)}</span>
@@ -97,7 +97,7 @@ export function AttractionCard({ attraction, onLearnMore }: AttractionCardProps)
           <div
             className="flex items-center gap-1 text-primary font-bold text-sm transition-all group-hover:translate-x-1 cursor-pointer"
             aria-label={`Ver más detalles sobre ${title}`}
-            onClick={onLearnMore} // 👈 Ahora TypeScript sabe qué es
+            onClick={onLearnMore}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {

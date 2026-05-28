@@ -46,6 +46,7 @@ export function ImageGallery({ images, nombre }: ImageGalleryProps) {
           src={images[currentIndex].url}
           alt={images[currentIndex].alt || `${nombre} - Imagen ${currentIndex + 1}`}
           fill
+          sizes="(max-width: 768px) 100vw, 80vw"
           className="object-cover transition-transform duration-500"
           priority
         />
@@ -99,6 +100,7 @@ export function ImageGallery({ images, nombre }: ImageGalleryProps) {
                 src={image.url}
                 alt={image.alt || `Miniatura ${index + 1}`}
                 fill
+                sizes="112px"
                 className="object-cover"
               />
             </button>

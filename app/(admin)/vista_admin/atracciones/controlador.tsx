@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react"
 import { AttractionsTable, Attraction } from "./page"
 import { AttractionForm } from "./attraction-form"
-import { Loader2 } from "lucide-react"
+import { useAlert } from "@/components/global-alert"
+
+
 
 export default function AdminTourismPage() {
     const [view, setView] = useState<"table" | "form">("table")
@@ -11,9 +13,54 @@ export default function AdminTourismPage() {
     const [attractions, setAttractions] = useState<Attraction[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
+    const { showAlert } = useAlert()
+
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
 
-    // 1. CARGAR TODOS LOS ATRACTIVOS (GET /api/tourism)
+
+    // 1. Modificar Visibilidad (PATCH /api/tourism/{id}/visibility)
+    const handleToggleActive = async (id: string, isvisible: boolean) => {
+        // 1. Optimistic UI: Actualizamos el estado local inmediatamente para UX fluida
+        setAttractions((prev) =>
+            prev.map((attr) =>
+                attr.id === id ? { ...attr, isvisible: isvisible } : attr
+            )
+        );
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/tourism/${id}/visibility`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                // Aseguramos de enviar el booleano correctamente
+                body: JSON.stringify({ isvisible: isvisible }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || "Error al actualizar en el servidor");
+            }
+        } catch (error) {
+            console.error("Error al cambiar visibilidad:", error);
+
+            // 2. Rollback: Si falla la petición, revertimos el estado visual
+            setAttractions((prev) =>
+                prev.map((attr) =>
+                    attr.id === id ? { ...attr, isvisible: !isvisible } : attr
+                )
+            );
+
+            showAlert("error", "Error de actualización", "No se pudo cambiar la visibilidad. Verifica tu conexión.");
+        }
+    };
+
+
+
+
+    // 2. CARGAR TODOS LOS ATRACTIVOS (GET /api/tourism)
     const fetchAttractions = async () => {
         setIsLoading(true)
         try {
@@ -59,12 +106,14 @@ export default function AdminTourismPage() {
                         coordinates: "",
                         mapsLink: "",
                         fotosOriginales: item.fotos || [],
+                        isvisible: item.isvisible === undefined ? true : Boolean(item.isvisible),
                     };
                 })
                 setAttractions(mapped)
             }
         } catch (error) {
             console.error("Error al cargar atractivos:", error)
+            showAlert("error", "Error de conexión", "No se pudieron cargar los datos del servidor.")
         } finally {
             setIsLoading(false)
         }
@@ -99,10 +148,12 @@ export default function AdminTourismPage() {
             formData.append("direccion", data.address || "Sogamoso, Boyacá")
 
             // 4. Adjuntar las fotos binarias de la computadora si existen
+
             if (data.imageFiles && data.imageFiles.length > 0) {
+                // Definimos el nombre del campo dinámicamente según la acción
+                const nombreCampoFoto = currentAttraction ? "nuevas_fotos[]" : "fotos[]";
                 data.imageFiles.forEach((imageFile) => {
-                    // 'fotos[]' es el nombre exacto que espera recibir el validador en Laravel
-                    formData.append("nuevas_fotos[]", imageFile)
+                    formData.append(nombreCampoFoto, imageFile);
                 })
             }
 
@@ -150,25 +201,38 @@ export default function AdminTourismPage() {
             }
         } catch (error: any) {
             console.error("Error en la operación:", error)
-            alert(`No se pudo guardar: ${error.message}`)
+            showAlert("error", "Error al guardar", error.message)
         }
     }
 
     // 3. ELIMINAR ATRACTIVO (DELETE /api/tourism/{id})
-    const handleDelete = async (id: string) => {
+const handleDelete = async (id: string) => {
         try {
             const response = await fetch(`${BASE_URL}/api/tourism/${id}`, {
                 method: "DELETE",
-            })
-            if (!response.ok) throw new Error("Error al eliminar")
-            const result = await response.json()
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) throw new Error("Error en la respuesta del servidor");
+
+            const result = await response.json();
+
             if (result.success) {
-                setAttractions((prev) => prev.filter((item) => item.id !== id))
+                setAttractions((prev) => prev.filter((item) => item.id !== id));
+                showAlert("success", "Eliminado", "El atractivo fue eliminado por completo.")
+            } else {
+                throw new Error(result.message || "No se pudo completar la eliminación");
             }
-        } catch (error) {
-            console.error("Error al eliminar:", error)
+        } catch (error: any) {
+            console.error("Error al eliminar:", error);
+            // Aseguramos capturar el mensaje dinámico si viene del backend
+            const errorMsg = error.message || "No se pudo eliminar el atractivo. Intenta nuevamente.";
+            showAlert("error", "Error en eliminación", errorMsg);
         }
-    }
+    };
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -181,6 +245,7 @@ export default function AdminTourismPage() {
                         setView("form")
                     }}
                     onDelete={handleDelete}
+                    onToggleActive={handleToggleActive}
                     onAddClick={() => {
                         setCurrentAttraction(null)
                         setView("form")

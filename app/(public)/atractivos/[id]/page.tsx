@@ -60,7 +60,6 @@ export default function AtractivoDetailPage() {
         // Mapeamos los datos del backend a la estructura que tu diseño espera
         setAtractivo({
           ...data,
-          calificacion: data.calificacion || 5.0, // Valor por defecto si no tienes reseñas aún
           fotos: fotosFormateadas,
           // Manejamos la dirección por si viene como objeto relacional
           direccion: typeof data.direccion === 'object' && data.direccion
@@ -133,7 +132,7 @@ export default function AtractivoDetailPage() {
           url: window.location.href,
         })
       } catch {
-        // Usuario canceló la acción
+
       }
     } else {
       navigator.clipboard.writeText(window.location.href)
@@ -250,13 +249,6 @@ export default function AtractivoDetailPage() {
                     <h1 className="text-2xl font-bold text-gray-900 leading-tight">
                       {atractivo.nombre}
                     </h1>
-                  </div>
-
-                  <div className="flex items-center gap-1 bg-[#fff8e8] border border-[#f3d27a] rounded-full px-3 py-1.5 shrink-0">
-                    <Star className="h-4 w-4 fill-[#d4a84b] text-[#d4a84b]" />
-                    <span className="font-semibold text-gray-900">
-                      {atractivo.calificacion.toFixed(1)}
-                    </span>
                   </div>
                 </div>
 

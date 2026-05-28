@@ -18,12 +18,10 @@ export const mapBackendToFrontend = (backendData: BackendAtractivo[]): Attractio
       title: item.nombre,
       description: item.descripcion || "Sin descripción disponible.",
       image: imageUrl,
-      // Los siguientes datos se simulan o adaptan porque no están en la BD original
-      rating: 4.5, // Valor por defecto o podrías agregar un sistema de reviews luego
       category: item.tipo,
       distance: item.direccion ? item.direccion.direccion : "Sogamoso",
       duration: item.horario || "Abierto al público", 
-      featured: index === 0, // Hacemos que el primer registro sea el destacado visualmente
+      featured: index === 0,
     };
   });
 };
