@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { AdminSidebar } from "./vista_admin/admin-sidebar"
-import { AdminHeader } from "./vista_admin/admin-header"
-import { MobileSidebar } from "./vista_admin/mobile-sidebar"
-import { RoleManagement } from "./vista_admin/role-management"
-import { EventosAdmin } from "./vista_admin/eventos"
-import { GraficasAdmin } from "./vista_admin/graficas"
+import { AdminSidebar } from "../(admin)/vista_admin/admin-sidebar"
+import { AdminHeader } from "../(admin)/vista_admin/admin-header"
+import { MobileSidebar } from "../(admin)/vista_admin/mobile-sidebar"
+import { RoleManagement } from "./vista_admin/gestor_roles/role-management"
+import { EventosAdmin } from "./vista_admin/eventos/eventos"
+import { GraficasAdmin } from "./vista_admin/estadisticas/graficas"
+import  AdminTourismPage  from "./vista_admin/atracciones/controlador"
 import {
     canAccessAdmin,
     clearSession,
@@ -69,6 +70,8 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
 
     const renderContent = () => {
         switch (activeItem) {
+            case "attractions":
+                return <AdminTourismPage />; 
             case "roles":
                 return isSuperadmin ? <RoleManagement /> : <AccessDenied />
             case "events":
