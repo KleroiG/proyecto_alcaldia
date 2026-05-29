@@ -8,7 +8,7 @@ import { useSearchParams } from "next/navigation"
 
 export default function PrestadoresPage() {
   const searchParams = useSearchParams()
-  
+
   // Estados de control asíncronos obligatorios
   const [providers, setProviders] = useState<Provider[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -32,14 +32,14 @@ export default function PrestadoresPage() {
       try {
         setIsLoading(true)
         setError(null)
-        
+
         // Ajusta la URL base según tus variables de entorno (ej: process.env.NEXT_PUBLIC_API_URL)
         const response = await fetch("http://localhost:8000/api/prestadores-turisticos")
-        
+
         if (!response.ok) {
           throw new Error("No se pudo obtener la información de los prestadores.")
         }
-        
+
         const json = await response.json()
         if (json.success) {
           setProviders(json.data)
@@ -114,9 +114,12 @@ export default function PrestadoresPage() {
               {filteredProviders.length} {filteredProviders.length === 1 ? "resultado" : "resultados"} encontrados
             </p>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredProviders.map((provider) => (
-                <ProviderCard key={provider.id} provider={provider} />
+                <ProviderCard
+                  key={provider.id}
+                  provider={provider}
+                />
               ))}
             </div>
 

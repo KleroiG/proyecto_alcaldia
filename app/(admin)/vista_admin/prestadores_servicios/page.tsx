@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Search, Plus, Pencil, Trash2, MapPin, ImageIcon, Star, Phone, Loader2 } from "lucide-react"
 import { GuiaCard, type Guia } from "./seccion-guia"
 import { PrestadorForm } from "./prestadores-form"
-import { fetchAllPrestadoresYGuias, savePrestadorService, saveGuiaService, deletePrestadorService, deleteGuiaService } from "./prestadores-service"
+import { fetchAllPrestadoresYGuias, savePrestadorService, saveGuiaService, deletePrestadorService, deleteGuiaService } from "./controlador"
 
 export interface Prestador {
     id: string

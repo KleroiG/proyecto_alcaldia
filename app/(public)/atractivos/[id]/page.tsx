@@ -8,7 +8,7 @@ import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { ImageGallery } from "../image-gallery"
+import { ImageGallery } from "../../image-gallery"
 
 export default function AtractivoDetailPage() {
   const params = useParams()
