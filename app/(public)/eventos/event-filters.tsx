@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { Search, CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -21,49 +20,52 @@ import {
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 
-const categories = [
-  { value: "all", label: "Todas las categorías" },
-  { value: "musica", label: "Música" },
-  { value: "danza", label: "Danza" },
-  { value: "teatro", label: "Teatro" },
-  { value: "festivales", label: "Festivales" },
-  { value: "talleres", label: "Talleres" },
-]
+type EventFiltersProps = {
+  categories: string[]
+  date: Date | undefined
+  searchQuery: string
+  category: string
+  onDateChange: (date: Date | undefined) => void
+  onSearchChange: (value: string) => void
+  onCategoryChange: (value: string) => void
+}
 
-export function EventFilters() {
-  const [date, setDate] = useState<Date | undefined>(undefined)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [category, setCategory] = useState("all")
-
+export function EventFilters({
+  categories,
+  date,
+  searchQuery,
+  category,
+  onDateChange,
+  onSearchChange,
+  onCategoryChange,
+}: EventFiltersProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-      {/* Search Input */}
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         <Input
           type="text"
           placeholder="Buscar eventos..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => onSearchChange(e.target.value)}
           className="pl-10 bg-white border-gray-200"
         />
       </div>
 
-      {/* Category Select */}
-      <Select value={category} onValueChange={setCategory}>
+      <Select value={category} onValueChange={onCategoryChange}>
         <SelectTrigger className="w-full sm:w-[200px] bg-white border-gray-200">
-          <SelectValue placeholder="Categoría" />
+          <SelectValue placeholder="Categoria" />
         </SelectTrigger>
         <SelectContent>
+          <SelectItem value="all">Todas las categorias</SelectItem>
           {categories.map((cat) => (
-            <SelectItem key={cat.value} value={cat.value}>
-              {cat.label}
+            <SelectItem key={cat} value={cat}>
+              {cat}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      {/* Date Picker */}
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -81,7 +83,7 @@ export function EventFilters() {
           <Calendar
             mode="single"
             selected={date}
-            onSelect={setDate}
+            onSelect={onDateChange}
             initialFocus
           />
         </PopoverContent>

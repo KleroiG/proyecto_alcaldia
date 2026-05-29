@@ -11,29 +11,24 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  allowedDevOrigins: ["172.21.0.1", "localhost"],
   images: {
     unoptimized: true,
-  },
-
-  allowedDevOrigins: ['172.21.0.1', 'localhost'],
-
-  images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'drive.google.com', // Enlaces compartidos normales de Drive
+        protocol: "https",
+        hostname: "drive.google.com",
       },
       {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com', // Enlaces directos que genera la API de Google
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
       },
       {
-        protocol: 'https',
-        hostname: 'images.unsplash.com', // El enlace temporal que usamos arriba
-      }
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
     ],
   },
-
 }
 
 export default nextConfig
