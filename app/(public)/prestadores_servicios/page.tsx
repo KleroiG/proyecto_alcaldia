@@ -2,6 +2,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Suspense } from "react"
 import { ProviderCard, type Provider } from "@/app/(public)/prestadores_servicios/provider-card"
 import { ProviderFilters } from "@/app/(public)/prestadores_servicios/provider-filters"
 import { useSearchParams } from "next/navigation"
@@ -74,6 +75,7 @@ export default function PrestadoresPage() {
   })
 
   return (
+    <Suspense fallback={<div className="p-20 text-center">Cargando filtros...</div>}>
     <div className="min-h-screen bg-gray-50">
       <main className="container mx-auto px-4 py-8 pt-24">
         {/* Título de la sección */}
@@ -135,5 +137,6 @@ export default function PrestadoresPage() {
         )}
       </main>
     </div>
+    </Suspense>
   )
 }
