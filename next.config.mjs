@@ -1,18 +1,33 @@
-import path from "node:path"
+import { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const projectRoot = dirname(fileURLToPath(import.meta.url))
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {
-    root: __dirname,
+    root: projectRoot,
   },
   typescript: {
     ignoreBuildErrors: true,
   },
+  allowedDevOrigins: ["172.21.0.1", "localhost"],
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "drive.google.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
   },
 }
 

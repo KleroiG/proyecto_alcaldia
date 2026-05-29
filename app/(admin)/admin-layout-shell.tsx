@@ -1,38 +1,103 @@
-// app/(admin)/vista_admin/components/AdminLayoutShell.tsx
 "use client"
 
-import { useState } from "react"
-import { AdminSidebar } from "../(admin)/vista_admin/admin-sidebar"
-import { AdminHeader } from "../(admin)/vista_admin/admin-header"
-import { MobileSidebar } from "../(admin)/vista_admin/mobile-sidebar"
-import { RoleManagement } from "../(admin)/vista_admin/role-management"
-import { EventosAdmin } from "../(admin)/vista_admin/eventos"
-import { GraficasAdmin } from "../(admin)/vista_admin/graficas"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { AdminSidebar } from "./vista_admin/admin-sidebar"
+import { AdminHeader } from "./vista_admin/admin-header"
+import { MobileSidebar } from "./vista_admin/mobile-sidebar"
+import { RoleManagement } from "./vista_admin/gestor_roles/role-management"
+import { EventosAdmin } from "./vista_admin/eventos/eventos"
+import { GraficasAdmin } from "./vista_admin/estadisticas/graficas"
+import AdminTourismPage from "./vista_admin/atracciones/controlador"
+import {
+    canAccessAdmin,
+    canManageUsers,
+    clearSession,
+    getAllowedAdminSections,
+    getInitialAdminSection,
+    getProfileName,
+    getProfileRole,
+    getStoredProfile,
+    getStoredToken,
+    type AuthProfile,
+} from "@/lib/auth"
+import { ROUTES } from "@/lib/routes"
 
 export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
-    const [activeItem, setActiveItem] = useState("roles") // "roles" por defecto según tu imagen
+    const [activeItem, setActiveItem] = useState("dashboard")
     const [collapsed, setCollapsed] = useState(false)
+    const [profile, setProfile] = useState<AuthProfile | null>(null)
+    const [isCheckingSession, setIsCheckingSession] = useState(true)
+    const router = useRouter()
 
-    // Mapeo de secciones para escalabilidad
+    useEffect(() => {
+        const token = getStoredToken()
+
+        if (!token) {
+            router.replace(ROUTES.autenticacion)
+            return
+        }
+
+        const storedProfile = getStoredProfile()
+
+        if (!canAccessAdmin(storedProfile)) {
+            clearSession()
+            router.replace(ROUTES.autenticacion)
+            return
+        }
+
+        setProfile(storedProfile)
+        setActiveItem(getInitialAdminSection(storedProfile))
+        setIsCheckingSession(false)
+    }, [router])
+
+    const allowedSections = getAllowedAdminSections(profile)
+    const canOpenUserManagement = canManageUsers(profile)
+
+    const handleNavigate = (item: string) => {
+        if (!allowedSections.includes(item)) {
+            return
+        }
+
+        setActiveItem(item)
+    }
+
+    const handleLogout = () => {
+        clearSession()
+        router.replace(ROUTES.autenticacion)
+    }
+
     const renderContent = () => {
         switch (activeItem) {
+            case "attractions":
+                return <AdminTourismPage />
             case "roles":
-                return <RoleManagement />;
+                return canOpenUserManagement ? <RoleManagement /> : <AccessDenied />
             case "events":
-                return <EventosAdmin />;
+                return <EventosAdmin />
             case "dashboard":
-                return <GraficasAdmin />;
+                return <GraficasAdmin />
             default:
-                return <div className="p-4">Sección en desarrollo...</div>;
+                return children || <div className="p-4">Seccion en desarrollo...</div>
         }
+    }
+
+    if (isCheckingSession) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-gray-50 text-sm text-muted-foreground">
+                Validando sesion...
+            </div>
+        )
     }
 
     return (
         <div className="flex min-h-screen bg-background">
             <div className="hidden lg:block">
                 <AdminSidebar
+                    isSuperadmin={canOpenUserManagement}
+                    allowedItems={allowedSections}
                     activeItem={activeItem}
-                    onNavigate={(item) => setActiveItem(item)} // Actualiza el estado al hacer click
+                    onNavigate={handleNavigate}
                     collapsed={collapsed}
                     onToggleCollapse={() => setCollapsed(!collapsed)}
                 />
@@ -41,26 +106,37 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
             <div className="flex flex-1 flex-col overflow-hidden">
                 <header className="flex h-16 items-center gap-2 border-b border-border bg-card px-4 lg:px-6">
                     <MobileSidebar
+                        isSuperadmin={canOpenUserManagement}
+                        allowedItems={allowedSections}
                         activeItem={activeItem}
-                        onNavigate={setActiveItem}
+                        onNavigate={handleNavigate}
                     />
                     <h1 className="text-lg font-semibold">Panel Administrativo</h1>
                     <div className="ml-auto">
-                        <AdminHeader userName="Carlos Rodríguez" userRole="Superadministrador" />
+                        <AdminHeader
+                            userName={getProfileName(profile)}
+                            userRole={getProfileRole(profile)}
+                            onLogout={handleLogout}
+                        />
                     </div>
                 </header>
 
-
                 <div className="flex flex-1 flex-col overflow-hidden">
-                    {/* ... Header ... */}
                     <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50">
                         <div className="mx-auto max-w-7xl">
-                            {/* Renderizamos el componente dinámico en lugar de children si es navegación interna */}
                             {renderContent()}
                         </div>
                     </main>
                 </div>
             </div>
+        </div>
+    )
+}
+
+function AccessDenied() {
+    return (
+        <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
+            No tienes permisos para acceder a esta seccion.
         </div>
     )
 }
