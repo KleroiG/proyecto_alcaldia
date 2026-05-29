@@ -9,22 +9,13 @@ import { RoleManagement } from "./vista_admin/gestor_roles/role-management"
 import { EventosAdmin } from "./vista_admin/eventos/eventos"
 import { GraficasAdmin } from "./vista_admin/estadisticas/graficas"
 import AdminTourismPage from "./vista_admin/atracciones/controlador"
-import {
-    canAccessAdmin,
-    canManageUsers,
-    clearSession,
-    getAllowedAdminSections,
-    getInitialAdminSection,
-    getProfileName,
-    getProfileRole,
-    getStoredProfile,
-    getStoredToken,
-    type AuthProfile,
-} from "@/lib/auth"
+import AdminPrestadoresPage from "./vista_admin/prestadores_servicios/page"
+import { AuthProfile, canAccessAdmin, canManageUsers, clearSession, getAllowedAdminSections, getInitialAdminSection, getProfileName, getProfileRole, getStoredProfile, getStoredToken } from "@/lib/auth"
 import { ROUTES } from "@/lib/routes"
 
+
 export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
-    const [activeItem, setActiveItem] = useState("dashboard")
+    const [activeItem, setActiveItem] = useState("roles")
     const [collapsed, setCollapsed] = useState(false)
     const [profile, setProfile] = useState<AuthProfile | null>(null)
     const [isCheckingSession, setIsCheckingSession] = useState(true)
@@ -70,7 +61,9 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
     const renderContent = () => {
         switch (activeItem) {
             case "attractions":
-                return <AdminTourismPage />
+                return <AdminTourismPage />;
+            case "prestadores":
+                return <AdminPrestadoresPage />;
             case "roles":
                 return canOpenUserManagement ? <RoleManagement /> : <AccessDenied />
             case "events":

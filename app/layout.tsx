@@ -2,9 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { DM_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
-import { GlobalAlertProvider } from "@/components/global-alert"
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
+import { GlobalAlertProvider } from '@/components/global-alert';
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
