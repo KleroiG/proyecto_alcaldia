@@ -15,6 +15,7 @@ export type AuthProfile = {
   apellido?: string;
   correo?: string;
   role?: string | number;
+  rol?: string | number;
   estado?: string;
   [key: string]: unknown;
 };
@@ -234,7 +235,7 @@ export function getProfileName(profile: AuthProfile | null) {
 }
 
 export function getProfileRole(profile: AuthProfile | null) {
-  const role = profile?.role;
+  const role = getRoleValue(profile);
 
   if (role === 1 || role === "1" || role === "superadmin") {
     return "Superadministrador";
@@ -247,18 +248,56 @@ export function getProfileRole(profile: AuthProfile | null) {
   return "Usuario";
 }
 
+function getRoleValue(profile: AuthProfile | null) {
+  return profile?.role ?? profile?.rol;
+}
+
 export function isSuperAdmin(profile: AuthProfile | null) {
-  return profile?.role === 1 || profile?.role === "1" || profile?.role === "superadmin";
+  const role = getRoleValue(profile);
+  return role === 1 || role === "1" || role === "superadmin";
 }
 
 export function isAdmin(profile: AuthProfile | null) {
+  const role = getRoleValue(profile);
+
   return (
-    profile?.role === 0 ||
-    profile?.role === "0" ||
-    profile?.role === 2 ||
-    profile?.role === "2" ||
-    profile?.role === "admin"
+    role === 0 ||
+    role === "0" ||
+    role === 2 ||
+    role === "2" ||
+    role === "admin"
   );
+}
+
+function isPermissionEnabled(value: unknown) {
+  return value === true || value === "true" || value === 1 || value === "1";
+}
+
+export function hasFullAdminPermissions(profile: AuthProfile | null) {
+  if (!profile) {
+    return false;
+  }
+
+  if (isSuperAdmin(profile)) {
+    return true;
+  }
+
+  const hasStatisticsPermission = Object.prototype.hasOwnProperty.call(
+    profile,
+    "perm_estadisticas",
+  );
+
+  return (
+    isPermissionEnabled(profile.perm_atractivos) &&
+    isPermissionEnabled(profile.perm_prestadores_servicios) &&
+    isPermissionEnabled(profile.perm_servicios_culturales) &&
+    isPermissionEnabled(profile.perm_agenda_eventos) &&
+    (!hasStatisticsPermission || isPermissionEnabled(profile.perm_estadisticas))
+  );
+}
+
+export function canManageUsers(profile: AuthProfile | null) {
+  return hasFullAdminPermissions(profile);
 }
 
 export function canAccessAdmin(profile: AuthProfile | null) {
@@ -274,37 +313,39 @@ export function getAllowedAdminSections(profile: AuthProfile | null) {
     return [];
   }
 
-  if (isSuperAdmin(profile)) {
-    return ["dashboard", "attractions", "providers", "cultural", "events", "roles"];
+  if (canManageUsers(profile)) {
+    return ["roles", "dashboard", "attractions", "providers", "cultural", "events"];
   }
 
   const sections: string[] = [];
 
-  if (profile.perm_atractivos === true || profile.perm_atractivos === "true") {
+  if (isPermissionEnabled(profile.perm_atractivos)) {
     sections.push("attractions");
   }
 
-  if (
-    profile.perm_prestadores_servicios === true ||
-    profile.perm_prestadores_servicios === "true"
-  ) {
+  if (isPermissionEnabled(profile.perm_prestadores_servicios)) {
     sections.push("providers");
   }
 
-  if (
-    profile.perm_servicios_culturales === true ||
-    profile.perm_servicios_culturales === "true"
-  ) {
+  if (isPermissionEnabled(profile.perm_servicios_culturales)) {
     sections.push("cultural");
   }
 
-  if (profile.perm_agenda_eventos === true || profile.perm_agenda_eventos === "true") {
+  if (isPermissionEnabled(profile.perm_agenda_eventos)) {
     sections.push("events");
   }
 
-  if (isAdmin(profile) || profile.perm_estadisticas === true || profile.perm_estadisticas === "true") {
+  if (isAdmin(profile) || isPermissionEnabled(profile.perm_estadisticas)) {
     sections.unshift("dashboard");
   }
 
   return sections;
+}
+
+export function getInitialAdminSection(profile: AuthProfile | null) {
+  if (canManageUsers(profile)) {
+    return "roles";
+  }
+
+  return getAllowedAdminSections(profile)[0] || "dashboard";
 }

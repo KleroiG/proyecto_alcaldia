@@ -10,13 +10,14 @@ import { EventosAdmin } from "./vista_admin/eventos"
 import { GraficasAdmin } from "./vista_admin/graficas"
 import {
     canAccessAdmin,
+    canManageUsers,
     clearSession,
     getAllowedAdminSections,
+    getInitialAdminSection,
     getProfileName,
     getProfileRole,
     getStoredProfile,
     getStoredToken,
-    isSuperAdmin,
     type AuthProfile,
 } from "@/lib/auth"
 import { ROUTES } from "@/lib/routes"
@@ -44,15 +45,13 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
             return
         }
 
-        const allowedSections = getAllowedAdminSections(storedProfile)
-
         setProfile(storedProfile)
-        setActiveItem(allowedSections[0] || "dashboard")
+        setActiveItem(getInitialAdminSection(storedProfile))
         setIsCheckingSession(false)
     }, [router])
 
     const allowedSections = getAllowedAdminSections(profile)
-    const isSuperadmin = isSuperAdmin(profile)
+    const canOpenUserManagement = canManageUsers(profile)
 
     const handleNavigate = (item: string) => {
         if (!allowedSections.includes(item)) {
@@ -70,7 +69,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
     const renderContent = () => {
         switch (activeItem) {
             case "roles":
-                return isSuperadmin ? <RoleManagement /> : <AccessDenied />
+                return canOpenUserManagement ? <RoleManagement /> : <AccessDenied />
             case "events":
                 return <EventosAdmin />
             case "dashboard":
@@ -92,7 +91,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
         <div className="flex min-h-screen bg-background">
             <div className="hidden lg:block">
                 <AdminSidebar
-                    isSuperadmin={isSuperadmin}
+                    isSuperadmin={canOpenUserManagement}
                     allowedItems={allowedSections}
                     activeItem={activeItem}
                     onNavigate={handleNavigate}
@@ -104,7 +103,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
             <div className="flex flex-1 flex-col overflow-hidden">
                 <header className="flex h-16 items-center gap-2 border-b border-border bg-card px-4 lg:px-6">
                     <MobileSidebar
-                        isSuperadmin={isSuperadmin}
+                        isSuperadmin={canOpenUserManagement}
                         allowedItems={allowedSections}
                         activeItem={activeItem}
                         onNavigate={handleNavigate}
