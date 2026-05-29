@@ -30,7 +30,8 @@ export function Header() {
               alt="Logo Sogamoso"
               width={200}
               height={200}
-              className="transition-transform duration-300 group-hover:rotate-8"
+              priority
+              style={{ width: "auto", height: "auto" }}
             />
           </Link>
 
