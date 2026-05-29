@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 import { CalendarDays, Clock, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -9,11 +10,15 @@ export type EventStatus = "upcoming" | "ongoing" | "finished" | "last-spots"
 interface EventCardProps {
   title: string
   date: string
-  time: string
+  endDate?: string
   location: string
   description: string
   imageUrl: string
   status: EventStatus
+  detailHref?: string
+  organizer?: string
+  contact?: string
+  category?: string
 }
 
 const statusConfig: Record<EventStatus, { label: string; className: string }> = {
@@ -38,11 +43,15 @@ const statusConfig: Record<EventStatus, { label: string; className: string }> = 
 export function EventCard({
   title,
   date,
-  time,
+  endDate,
   location,
   description,
   imageUrl,
   status,
+  detailHref,
+  organizer,
+  contact,
+  category,
 }: EventCardProps) {
   const statusInfo = statusConfig[status]
 
@@ -79,10 +88,12 @@ export function EventCard({
             <CalendarDays className="h-4 w-4 text-[#d4a84b]" />
             <span>{date}</span>
           </div>
+          {endDate && (
           <div className="flex items-center gap-1.5">
             <Clock className="h-4 w-4 text-[#d4a84b]" />
-            <span>{time}</span>
+            <span>{endDate}</span>
           </div>
+          )}
         </div>
 
         {/* Location */}
@@ -96,10 +107,24 @@ export function EventCard({
           {description}
         </p>
 
+        {(category || organizer || contact) && (
+          <div className="mb-4 space-y-1 text-xs text-gray-500">
+            {category && <p>Categoria: {category}</p>}
+            {organizer && <p>Organiza: {organizer}</p>}
+            {contact && <p>Contacto: {contact}</p>}
+          </div>
+        )}
+
         {/* Action Button */}
-        <Button className="w-full bg-emerald-500 text-white hover:bg-emerald-600">
-          Ver Detalles
-        </Button>
+        {detailHref ? (
+          <Button asChild className="w-full bg-emerald-500 text-white hover:bg-emerald-600">
+            <Link href={detailHref}>Ver Detalles</Link>
+          </Button>
+        ) : (
+          <Button className="w-full bg-emerald-500 text-white hover:bg-emerald-600">
+            Ver Detalles
+          </Button>
+        )}
       </div>
     </article>
   )
