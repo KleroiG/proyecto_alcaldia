@@ -24,14 +24,17 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#60150F] backdrop-blur-md border-b border-white/10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <nav className="flex h-16 items-center justify-between lg:h-20">
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link
+            href="/"
+            className="inline-flex items-center self-center"
+          >
             <Image
               src="/images/LogoEscudoSogamoso.png"
               alt="Logo Sogamoso"
-              width={100}
-              height={100}
+              width={300}
+              height={120}
               priority
-              className="w-55 h-auto"
+              className="w-[220px] h-auto"
             />
           </Link>
 

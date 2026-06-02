@@ -28,49 +28,6 @@ export function AdminHeader({
 }: AdminHeaderProps) {
   return (
     <div className="flex items-center gap-2 sm:gap-4">
-      {/* Notifications */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="size-5 text-muted-foreground" />
-            {notificationCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
-                {notificationCount}
-              </span>
-            )}
-            <span className="sr-only">Notificaciones</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-80">
-          <DropdownMenuLabel>Notificaciones</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-            <span className="text-sm font-medium">Nuevo evento creado</span>
-            <span className="text-xs text-muted-foreground">
-              Festival de la Cultura - hace 2 horas
-            </span>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-            <span className="text-sm font-medium">Proveedor registrado</span>
-            <span className="text-xs text-muted-foreground">
-              Hotel El Lago - hace 5 horas
-            </span>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-            <span className="text-sm font-medium">
-              Reporte mensual disponible
-            </span>
-            <span className="text-xs text-muted-foreground">
-              Estadísticas de Marzo 2026
-            </span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="justify-center text-primary">
-            Ver todas las notificaciones
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
       {/* User Profile Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

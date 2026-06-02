@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAlert } from "@/components/global-alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { X, Upload, ArrowLeft, Loader2, ImageIcon } from "lucide-react"
+import { useConfirmation } from "@/components/confirmacion-alert"
 import { Attraction } from "./page"
 
 
@@ -44,6 +45,7 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
 
   //Alertas
   const { showAlert } = useAlert()
+  const { confirm } = useConfirmation()
 
   // 1. ESTADOS PARA LAS IMÁGENES
   // Imágenes que el usuario acaba de seleccionar desde su PC
@@ -130,10 +132,22 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
     })
   }
 
-  const removeExistingImage = (idFoto: number) => {
-    // La quitamos de la vista
-    setExistingImages((prev) => prev.filter((img) => img.id_foto !== idFoto))
-    // Agregamos su ID a la lista negra para que Laravel la borre
+  const removeExistingImage = async (idFoto: number) => {
+    const ok = await confirm({
+      title: "Eliminar fotografía",
+      message:
+        "Esta imagen se eliminará permanentemente al guardar los cambios.",
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "danger",
+    })
+
+    if (!ok) return
+
+    setExistingImages((prev) =>
+      prev.filter((img) => img.id_foto !== idFoto)
+    )
+
     setFotosAEliminar((prev) => [...prev, idFoto])
   }
 
@@ -160,6 +174,19 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
     e.preventDefault()
     if (!validateForm()) return
 
+    // Advertencia al momento de actualizar la información (solo cuando existe attraction)
+    if (attraction) {
+      const seguroActualizar = await confirm({
+        title: "Actualizar atractivo",
+        message:
+          "Se guardarán todos los cambios realizados, incluyendo las fotografías eliminadas.",
+        confirmText: "Actualizar",
+        cancelText: "Cancelar",
+        variant: "warning",
+      })
+      if (!seguroActualizar) return
+    }
+
     setIsSubmitting(true)
     try {
       const imageFiles = newImages.map((img) => img.file)
@@ -178,6 +205,22 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
     }
   }
 
+  const getDriveImage = (url: string) => {
+    console.log("URL ORIGINAL:", url);
+
+    const match = url.match(/[-\w]{25,}/);
+
+    console.log("MATCH:", match?.[0]);
+
+    if (!match) return url;
+
+    const finalUrl =
+      `https://drive.google.com/thumbnail?id=${match[0]}&sz=w2000`;
+
+    console.log("FINAL URL:", finalUrl);
+
+    return finalUrl;
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -323,8 +366,12 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                placeholder="Ej: +57 8 7700000"
+                onChange={(e) => {
+                  // Reemplaza todo lo que NO sea un número por un string vacío
+                  const limpio = e.target.value.replace(/[^0-9]/g, "")
+                  handleInputChange("phone", limpio)
+                }}
+                placeholder="Ej: 6087700000"
               />
             </div>
 
@@ -335,8 +382,12 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
               <Input
                 id="whatsapp"
                 value={formData.whatsapp}
-                onChange={(e) => handleInputChange("whatsapp", e.target.value)}
-                placeholder="Ej: +57 300 0000000"
+                onChange={(e) => {
+                  // Reemplaza todo lo que NO sea un número por un string vacío
+                  const limpio = e.target.value.replace(/[^0-9]/g, "")
+                  handleInputChange("whatsapp", limpio)
+                }}
+                placeholder="Ej: 3100000000"
               />
             </div>
 
@@ -360,7 +411,7 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
                 id="facebook"
                 value={formData.facebook}
                 onChange={(e) => handleInputChange("facebook", e.target.value)}
-                placeholder="facebook.com/pagina"
+                placeholder="https://www.facebook.com/pagina"
               />
             </div>
 
@@ -402,30 +453,6 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
                 <p className="text-red-500 text-xs">Este campo es obligatorio</p>
               )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="coordinates" className="text-gray-700">
-                Coordenadas (Latitud, Longitud)
-              </Label>
-              <Input
-                id="coordinates"
-                value={formData.coordinates}
-                onChange={(e) => handleInputChange("coordinates", e.target.value)}
-                placeholder="Ej: 5.7144, -72.9246"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="mapsLink" className="text-gray-700">
-                Enlace de Google Maps
-              </Label>
-              <Input
-                id="mapsLink"
-                value={formData.mapsLink}
-                onChange={(e) => handleInputChange("mapsLink", e.target.value)}
-                placeholder="https://maps.google.com/..."
-              />
-            </div>
           </div>
         </section>
 
@@ -464,14 +491,10 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
               {existingImages.map((img) => (
                 <div key={`existing-${img.id_foto}`} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm">
                   <img
-                    src={
-                      img.url_foto?.includes("drive.google.com")
-                        ? `https://drive.google.com/thumbnail?sz=w1000&id=${img.url_foto.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/)?.[1] || ""
-                        }`
-                        : (img.url_foto || img.url)
-                    }
-                    alt="Imagen guardada"
+                    src={getDriveImage(img.url_foto || img.url || "")}
+                    alt="Imagen"
                     className="w-full h-full object-cover"
+                    loading="lazy"
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-2">

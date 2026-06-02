@@ -3,6 +3,7 @@ import { DM_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { GlobalAlertProvider } from '@/components/global-alert';
+import { ConfirmationProvider } from '@/components/confirmacion-alert';
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -44,7 +45,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es" suppressHydrationWarning>
       <body className={`${dmSans.variable} font-sans antialiased`} suppressHydrationWarning>
         <GlobalAlertProvider>
-          {children}
+          <ConfirmationProvider>
+            {children}
+          </ConfirmationProvider>
         </GlobalAlertProvider>
         <Analytics />
       </body>

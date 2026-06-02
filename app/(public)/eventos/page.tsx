@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { EventFilters } from "@/app/(public)/eventos/event-filters"
 import { EventCard, type EventStatus } from "@/app/(public)/eventos/event-card"
 import { getEvents, type EventRecord } from "@/lib/events"
+import { MuiscaSunIcon } from "@/components/icon-sol"
 
 function toPublicStatus(status: EventRecord["estado"]): EventStatus {
   if (status === "Finalizado") {
@@ -107,9 +108,13 @@ export default function EventsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <main className="pt-24 pb-16">
+      <main className="mx-auto max-w-[1370px] pt-24 pb-16">
         <div className="container mx-auto px-4">
           <div className="mb-8">
+            <span className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-primary mb-2">
+              <MuiscaSunIcon className="h-5 w-5 text-gold" />
+              Sogamoso Ciudad del Sol
+            </span>
             <h1 className="text-3xl font-bold text-gray-900 md:text-4xl">
               Agenda Cultural y de Eventos
             </h1>

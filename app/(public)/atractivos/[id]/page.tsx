@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ImageGallery } from "../../image-gallery"
+import ShareModal from "@/components/share-section"
 
 export default function AtractivoDetailPage() {
   const params = useParams()
@@ -17,6 +18,14 @@ export default function AtractivoDetailPage() {
   // --- ESTADOS PARA MANEJAR DATOS REALES ---
   const [atractivo, setAtractivo] = useState<any>(null)
   const [cargando, setCargando] = useState(true)
+
+  // Estado para controlar el modal de compartir
+  const [shareOpen, setShareOpen] = useState(false)
+
+  const ubicacionBusqueda =
+    atractivo?.direccion?.trim()
+      ? `${atractivo.nombre}, ${atractivo.direccion}, Sogamoso, Boyacá`
+      : `${atractivo?.nombre || "Sogamoso"}, Boyacá`;
 
   // --- EFECTO PARA BUSCAR EN LA BASE DE DATOS ---
   useEffect(() => {
@@ -38,12 +47,13 @@ export default function AtractivoDetailPage() {
           if (urlFinal && urlFinal.includes("drive.google.com")) {
             const matches = urlFinal.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
             if (matches && matches[1]) {
-              urlFinal = `https://drive.google.com/thumbnail?sz=w1000&id=${matches[1]}`;
+              urlFinal = `https://drive.google.com/thumbnail?id=${matches[1]}&sz=w2000`;
             }
           }
           return {
             id: foto.id_foto || index,
             url: urlFinal,
+            loading: "lazy",
             alt: `Fotografía de ${data.nombre}`
           }
         });
@@ -123,22 +133,7 @@ export default function AtractivoDetailPage() {
     return `+57 ${phoneStr.slice(0, 3)} ${phoneStr.slice(3, 6)} ${phoneStr.slice(6)}`
   }
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: atractivo.nombre,
-          text: (atractivo.descripcion || "").slice(0, 100) + "...",
-          url: window.location.href,
-        })
-      } catch {
 
-      }
-    } else {
-      navigator.clipboard.writeText(window.location.href)
-      alert("¡Enlace copiado al portapapeles!")
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -181,14 +176,14 @@ export default function AtractivoDetailPage() {
               />
 
               {/* Description */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
+              <div className="relative bg-white rounded-2xl p-7 shadow-sm border border-gray-100 overflow-hidden group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                <h2 className="text-xl font-bold text-gray-900 mb-2 tracking-tight">
                   Descripción
                 </h2>
 
                 <Separator className="mb-6" />
 
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line text-justify">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line text-justify text-[15px] max-h-[420px] overflow-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300">
                   {atractivo.descripcion ||
                     "No hay una descripción detallada para este lugar."}
                 </p>
@@ -198,9 +193,10 @@ export default function AtractivoDetailPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 {/* Schedule */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="relative bg-white rounded-2xl p-6 border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 group">
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-gradient-to-br from-[#d4a84b]/5 to-transparent rounded-2xl" />
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-[#d4a84b]/10 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d4a84b]/10 to-transparent flex items-center justify-center shadow-sm group-hover:scale-110 transition">
                       <Clock className="h-5 w-5 text-[#d4a84b]" />
                     </div>
 
@@ -215,9 +211,10 @@ export default function AtractivoDetailPage() {
                 </div>
 
                 {/* Pricing */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="relative bg-white rounded-2xl p-6 border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 group">
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-gradient-to-br from-emerald-500/5 to-transparent rounded-2xl" />
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/10 to-transparent flex items-center justify-center shadow-sm group-hover:scale-110 transition">
                       <DollarSign className="h-5 w-5 text-emerald-500" />
                     </div>
 
@@ -236,129 +233,115 @@ export default function AtractivoDetailPage() {
             {/* RIGHT SIDEBAR */}
             <div className="space-y-6">
 
-              {/* Main Info Card */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              {/* MAIN CARD */}
+              <div className="relative overflow-hidden rounded-3xl bg-white shadow-lg border border-gray-100 transition-all hover:shadow-xl">
 
-                <div className="flex items-start justify-between gap-4 mb-5">
+                {/* Header decorativo */}
+                <div className="h-2 bg-gradient-to-r from-[#6b1d1d] via-[#d4a84b] to-[#6b1d1d]" />
 
-                  <div>
-                    <Badge className="bg-[#6b1d1d] text-white mb-3">
+                <div className="p-6">
+
+                  {/* Tipo + título */}
+                  <div className="mb-5">
+                    <Badge className="bg-[#6b1d1d] text-white px-3 py-1 rounded-full">
                       {atractivo.tipo}
                     </Badge>
 
-                    <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+                    <h1 className="text-2xl font-bold text-gray-900 mt-3 leading-tight">
                       {atractivo.nombre}
                     </h1>
-                  </div>
-                </div>
 
-                {/* Address */}
-                <div className="flex items-start gap-3 text-gray-600 mb-6">
-                  <div className="mt-0.5">
-                    <MapPin className="h-5 w-5 text-[#d4a84b]" />
+                    <p className="text-sm text-gray-500 mt-2">
+                      Descubre este lugar turístico
+                    </p>
                   </div>
 
-                  <span className="leading-relaxed">
-                    {atractivo.direccion}
-                  </span>
-                </div>
+                  {/* Dirección */}
+                  <div className="flex items-start gap-3 text-gray-600 mb-6 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
+                    <MapPin className="h-5 w-5 text-[#d4a84b] mt-0.5" />
+                    <span className="leading-relaxed text-sm">
+                      {atractivo.direccion}
+                    </span>
+                  </div>
 
-                <Separator className="my-6" />
+                  {/* BOTONES */}
+                  <div className="space-y-3">
 
-                {/* Action Buttons */}
-                <div className="space-y-3">
+                    {/* Cómo llegar */}
+                    <button
+                      className="w-full relative overflow-hidden group bg-[#6b1d1d] text-white py-3 rounded-xl font-medium transition-all hover:scale-[1.02]"
+                      onClick={() =>
+                        window.open(
+                          `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            ubicacionBusqueda
+                          )}`,
+                          "_blank"
+                        )
+                      }
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-2">
+                        <Navigation className="h-4 w-4" />
+                        Cómo llegar
+                      </span>
 
-                  <Button
-                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
-                    onClick={() =>
-                      window.open(
-                        `https://maps.google.com/?q=${encodeURIComponent(
-                          `${atractivo.nombre}, Sogamoso, Boyacá`
-                        )}`,
-                        "_blank"
-                      )
-                    }
-                  >
-                    <Navigation className="mr-2 h-4 w-4" />
-                    Cómo llegar
-                  </Button>
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#6b1d1d] to-[#8b2d2d] opacity-0 group-hover:opacity-100 transition" />
+                    </button>
 
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#6b1d1d] text-[#6b1d1d] hover:bg-[#6b1d1d] hover:text-white"
-                    onClick={handleShare}
-                  >
-                    <Share2 className="mr-2 h-4 w-4" />
-                    Compartir
-                  </Button>
+                    {/* COMPARTIR MEJORADO */}
+                    <button
+                      className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
+                      onClick={() => setShareOpen(true)}
+                    >
+                      Compartir lugar
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Contact Card */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              {/* CONTACTO CARD */}
+              <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition">
 
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  Información de Contacto
+                  Información de contacto
                 </h2>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
 
-                  {/* Empty State */}
                   {!atractivo.telefono &&
                     !atractivo.whatsapp &&
                     !atractivo.web && (
-                      <p className="text-sm text-gray-500">
-                        No hay información de contacto registrada.
+                      <p className="text-sm text-gray-500 italic">
+                        No hay información de contacto disponible.
                       </p>
                     )}
 
-                  {/* Phone */}
                   {atractivo.telefono && (
                     <a
                       href={`tel:+57${atractivo.telefono}`}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition"
                     >
-                      <div className="w-10 h-10 rounded-full bg-[#6b1d1d]/10 flex items-center justify-center">
-                        <Phone className="h-5 w-5 text-[#6b1d1d]" />
-                      </div>
-
+                      <Phone className="h-5 w-5 text-[#6b1d1d]" />
                       <div>
-                        <p className="text-xs text-gray-500">
-                          Teléfono
-                        </p>
-
-                        <p className="font-medium text-gray-900">
-                          {formatPhoneNumber(atractivo.telefono)}
-                        </p>
+                        <p className="text-xs text-gray-500">Teléfono</p>
+                        <p className="font-medium">{atractivo.telefono}</p>
                       </div>
                     </a>
                   )}
 
-                  {/* WhatsApp */}
                   {atractivo.whatsapp && (
                     <a
                       href={`https://wa.me/57${atractivo.whatsapp}`}
                       target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-green-50 hover:bg-green-100 transition"
                     >
-                      <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                        <MessageCircle className="h-5 w-5 text-green-500" />
-                      </div>
-
+                      <MessageCircle className="h-5 w-5 text-green-600" />
                       <div>
-                        <p className="text-xs text-gray-500">
-                          WhatsApp
-                        </p>
-
-                        <p className="font-medium text-gray-900">
-                          Enviar mensaje
-                        </p>
+                        <p className="text-xs text-gray-500">WhatsApp</p>
+                        <p className="font-medium">Enviar mensaje</p>
                       </div>
                     </a>
                   )}
 
-                  {/* Website */}
                   {atractivo.web && (
                     <a
                       href={
@@ -367,33 +350,31 @@ export default function AtractivoDetailPage() {
                           : `https://${atractivo.web}`
                       }
                       target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition"
                     >
-                      <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                        <Globe className="h-5 w-5 text-blue-500" />
-                      </div>
+                      <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition overflow-hidden">
+                        <div className="shrink-0">
+                          <Globe className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500">Sitio web</p>
 
-                      <div>
-                        <p className="text-xs text-gray-500">
-                          Sitio Web
-                        </p>
+                          <p className="font-medium text-sm text-gray-900 truncate">
+                            {atractivo.web.replace(/^https?:\/\//, "")}
+                          </p>
+                        </div>
 
-                        <p className="font-medium text-gray-900 truncate max-w-[180px]">
-                          {atractivo.web.replace(/^https?:\/\//, "")}
-                        </p>
                       </div>
                     </a>
                   )}
-                </div>
 
-                {/* Social Media */}
+                </div>
                 {(atractivo.instagram || atractivo.facebook) && (
                   <>
-                    <Separator className="my-5" />
+                    <div className="border-t border-gray-100 my-4" />
 
                     <h3 className="text-sm font-medium text-gray-500 mb-3">
-                      Redes Sociales
+                      Redes sociales
                     </h3>
 
                     <div className="flex gap-3">
@@ -403,7 +384,7 @@ export default function AtractivoDetailPage() {
                           href={`https://instagram.com/${atractivo.instagram.replace("@", "")}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center hover:scale-110 transition-transform"
+                          className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center hover:scale-110 transition-all duration-300 shadow-sm"
                         >
                           <Instagram className="h-5 w-5 text-white" />
                         </a>
@@ -411,35 +392,57 @@ export default function AtractivoDetailPage() {
 
                       {atractivo.facebook && (
                         <a
-                          href={`https://facebook.com/${atractivo.facebook}`}
+                          href={atractivo.facebook}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="w-10 h-10 rounded-full bg-[#1877F2] flex items-center justify-center hover:scale-110 transition-transform"
+                          className="w-12 h-12 rounded-full bg-[#1877F2] flex items-center justify-center hover:scale-110 transition-all duration-300 shadow-sm"
                         >
                           <Facebook className="h-5 w-5 text-white" />
                         </a>
                       )}
+
                     </div>
                   </>
                 )}
               </div>
 
-              {/* Map */}
-              <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-                <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                  <div className="text-center p-6">
-                    <MapPin className="h-12 w-12 text-[#6b1d1d] mx-auto mb-3" />
+              {/* MAPA */}
+              <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition">
 
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {atractivo.direccion}
-                    </p>
-                  </div>
+                <div className="p-4 border-b">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-[#6b1d1d]" />
+                    Ubicación
+                  </h3>
+                </div>
+
+                <div className="aspect-square">
+                  <iframe
+                    title="Mapa"
+                    width="100%"
+                    height="100%"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(
+                      ubicacionBusqueda
+                    )}&output=embed`}
+                    className="w-full h-full"
+                  />
                 </div>
               </div>
+
             </div>
           </div>
         </div>
       </main>
+
+      {shareOpen && (
+        <ShareModal
+          isOpen={shareOpen}
+          onClose={() => setShareOpen(false)}
+          shareUrl={window.location.href}
+        />
+      )}
     </div>
   )
 }

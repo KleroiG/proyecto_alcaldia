@@ -29,6 +29,7 @@ export function AttractionCard({ attraction, onLearnMore }: AttractionCardProps)
   const titleWords = title?.split(" ") ?? [];
   const shortTitle = titleWords.slice(0, 5).join(" ") + (titleWords.length > 5 ? "..." : "");
   const shortDuration = duration && duration.length > 55 ? duration.slice(0, 55) + "..." : duration;
+  
 
 
   return (
@@ -47,6 +48,7 @@ export function AttractionCard({ attraction, onLearnMore }: AttractionCardProps)
           alt={`Imagen representativa de ${title || "Atractivo Turístico"}`}
           fill
           priority={featured}
+          loading="lazy"
           className=" object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75 "
           sizes={featured ? "(max-width: 768px) 100vw, 66vw" : "(max-width: 640px) 100vw, 33vw"}
           onError={() => {
@@ -91,7 +93,7 @@ export function AttractionCard({ attraction, onLearnMore }: AttractionCardProps)
           className={cn(
             "font-bold text-white drop-shadow-xl transition-all duration-500",
             isExpanded
-              ? "text-xl"
+              ? "text-2xl"
               : featured
                 ? "text-4xl md:text-5xl"
                 : "text-3xl",
@@ -104,7 +106,7 @@ export function AttractionCard({ attraction, onLearnMore }: AttractionCardProps)
 
       {/* Contenido principal */}
       <div className="absolute inset-x-0 bottom-0 p-8">
-        <div className=" space-y-4 transition-all duration-500 group-hover:-translate-y-4 " >
+        <div className=" space-y-4 transition-all duration-500 group-hover:-translate-y-5" >
 
           {/* Descripción Glass */}
           <div className={cn(
@@ -112,8 +114,8 @@ export function AttractionCard({ attraction, onLearnMore }: AttractionCardProps)
             isExpanded
               ? "max-h-60 opacity-100 mt-4"
               : "max-h-0 opacity-0",
-            "group-hover:max-h-60 group-hover:opacity-100 group-hover:mt-4"
-          )}>
+            "group-hover:max-h-80 group-hover:opacity-100 group-hover:mt-4"
+            )}>
             <p className="line-clamp-3 text-sm leading-relaxed text-white/85">
               {description}
             </p>

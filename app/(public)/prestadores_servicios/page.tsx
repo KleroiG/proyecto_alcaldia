@@ -6,6 +6,7 @@ import { Suspense } from "react"
 import { ProviderCard, type Provider } from "@/app/(public)/prestadores_servicios/provider-card"
 import { ProviderFilters } from "@/app/(public)/prestadores_servicios/provider-filters"
 import { useSearchParams } from "next/navigation"
+import { MuiscaSunIcon } from "@/components/icon-sol"
 
 export default function PrestadoresPage() {
   const searchParams = useSearchParams()
@@ -84,9 +85,13 @@ export default function PrestadoresPage() {
   return (
     <Suspense fallback={<div className="p-20 text-center">Cargando filtros...</div>}>
       <div className="min-h-screen bg-gray-50">
-        <main className="container mx-auto px-4 py-8 pt-24">
+        <main className="mx-auto max-w-[1370px] px-4 sm:px-6 lg:px-8 py-8 pt-24">
           {/* Título de la sección */}
           <div className="mb-8">
+            <span className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-primary mb-2">
+              <MuiscaSunIcon className="h-5 w-5 text-gold" />
+              Sogamoso Ciudad del Sol
+            </span>
             <h1 className="text-3xl font-bold text-gray-900 md:text-4xl">
               Prestadores de Servicios Turísticos
             </h1>

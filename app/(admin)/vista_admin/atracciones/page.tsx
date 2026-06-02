@@ -89,6 +89,23 @@ export function AttractionsTable({
     }
   }
 
+  const getDriveImage = (url: string) => {
+    console.log("URL ORIGINAL:", url);
+
+    const match = url.match(/[-\w]{25,}/);
+
+    console.log("MATCH:", match?.[0]);
+
+    if (!match) return url;
+
+    const finalUrl =
+      `https://drive.google.com/thumbnail?id=${match[0]}&sz=w2000`;
+
+    console.log("FINAL URL:", finalUrl);
+
+    return finalUrl;
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
 
@@ -228,8 +245,9 @@ export function AttractionsTable({
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200 flex items-center justify-center">
                         {attraction.imageUrl ? (
                           <img
-                            src={attraction.imageUrl}
-                            alt={attraction.name}
+                            src={getDriveImage(attraction.imageUrl)}
+                            alt="Imagen"
+                            loading="lazy"
                             className="w-full h-full object-cover"
                             referrerPolicy="no-referrer"
                             onError={(e) => {

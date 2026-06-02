@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AttractionsTable, Attraction } from "./page"
-import { AttractionForm } from "./attraction-form"
+import { AttractionsTable, Attraction } from "../atracciones/page"
+import { AttractionForm } from "../atracciones/attraction-form"
 import { useAlert } from "@/components/global-alert"
 
 
@@ -79,7 +79,7 @@ export default function AdminTourismPage() {
                             const matches = rawUrl.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
                             if (matches && matches[1]) {
 
-                                finalImageUrl = `https://drive.google.com/thumbnail?sz=w600&id=${matches[1]}`;
+                                finalImageUrl = `https://drive.google.com/uc?export=view&id=${matches[1]}`;
                             } else {
                                 finalImageUrl = rawUrl;
                             }
@@ -121,8 +121,8 @@ export default function AdminTourismPage() {
         fetchAttractions()
     }, [])
 
-    // 2. CREAR O EDITAR ATRACTIVO (POST / PUT a Laravel)
-    const handleSave = async (data: Partial<Attraction> & { imageFiles?: File[] }) => {
+    // 3. CREAR O EDITAR ATRACTIVO (POST / PUT a Laravel)
+    const handleSave = async (data: Partial<Attraction> & { imageFiles?: File[], fotosAEliminar?: number[] }) => {
         try {
             const formData = new FormData()
 
@@ -141,18 +141,22 @@ export default function AdminTourismPage() {
             formData.append("web", data.website || "")
 
             // 3. LA DIRECCIÓN: Enviamos la dirección en texto plano. 
-            // El controlador de Laravel se encargará de hacer un DireccionGoogle::create() 
-            // antes de guardar el atractivo para generar el ID real automáticamente.
             formData.append("direccion", data.address || "Sogamoso, Boyacá")
 
-            // 4. Adjuntar las fotos binarias de la computadora si existen
-
+            // 4. Adjuntar las fotos
             if (data.imageFiles && data.imageFiles.length > 0) {
                 // Definimos el nombre del campo dinámicamente según la acción
                 const nombreCampoFoto = currentAttraction ? "nuevas_fotos[]" : "fotos[]";
                 data.imageFiles.forEach((imageFile) => {
                     formData.append(nombreCampoFoto, imageFile);
                 })
+            }
+
+            // 5. Fotos a iliminar
+            if (data.fotosAEliminar && data.fotosAEliminar.length > 0) {
+                data.fotosAEliminar.forEach((id) => {
+                    formData.append("fotos_a_eliminar[]", String(id));
+                });
             }
 
 
@@ -174,7 +178,6 @@ export default function AdminTourismPage() {
 
             // Análisis inteligente de la respuesta del servidor
             if (!response.ok) {
-                // Si Laravel responde con un error (como un 422 de validación o un 500), leemos el JSON para ver qué falló
                 const errorData = await response.json().catch(() => null)
                 console.error("Detalles del error devuelto por Laravel:", errorData)
 
@@ -204,7 +207,7 @@ export default function AdminTourismPage() {
     }
 
     // 3. ELIMINAR ATRACTIVO (DELETE /api/tourism/{id})
-const handleDelete = async (id: string) => {
+    const handleDelete = async (id: string) => {
         try {
             const response = await fetch(`${BASE_URL}/api/tourism/${id}`, {
                 method: "DELETE",
@@ -226,7 +229,6 @@ const handleDelete = async (id: string) => {
             }
         } catch (error: any) {
             console.error("Error al eliminar:", error);
-            // Aseguramos capturar el mensaje dinámico si viene del backend
             const errorMsg = error.message || "No se pudo eliminar el atractivo. Intenta nuevamente.";
             showAlert("error", "Error en eliminación", errorMsg);
         }

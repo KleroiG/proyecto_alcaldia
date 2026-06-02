@@ -80,7 +80,7 @@ export function ProviderCard({ provider }: ProviderCardProps) {
           fill
           sizes="(max-width:768px)100vw,33vw"
           className={cn(
-            "object-cover transition-all duration-700",
+            "object-cover transition-all duration-700 group-hover:scale-117 group-hover:brightness-60",
             isExpanded
               ? "scale-110 brightness-50"
               : "group-hover:scale-110 group-hover:brightness-50"
@@ -139,7 +139,7 @@ export function ProviderCard({ provider }: ProviderCardProps) {
         </div>
 
         {/* Contenido */}
-        <div className="absolute inset-x-0 bottom-0 p-6">
+        <div className="absolute inset-x-0 bottom-0 p-6 duration-500 group-hover:-translate-y-3">
 
           <div
             className={cn(

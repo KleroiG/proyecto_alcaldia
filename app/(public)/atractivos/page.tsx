@@ -76,7 +76,7 @@ export default function AttractionsSection() {
                 if (matches && matches[1]) {
                   const driveId = matches[1];
                   // Endpoint nativo de Google Fotos/Drive optimizado para visualización web directa
-                  imageUrl = `https://lh3.googleusercontent.com/u/0/d/${driveId}`;
+                  imageUrl = `https://drive.google.com/thumbnail?id=${matches[1]}&sz=w2000`;
                 } else {
                   imageUrl = rawUrl;
                 }
@@ -116,22 +116,13 @@ export default function AttractionsSection() {
       : attractions.filter((a: Attraction) => a.category === activeCategory)
   ), [activeCategory, attractions]);
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col h-96 items-center justify-center gap-2">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-muted-foreground text-sm">Cargando atractivos desde la alcaldía...</p>
-      </div>
-    );
-  }
-
   return (
     <section className="relative bg-background py-16 sm:py-24" aria-labelledby="attractions-title">
       <div className="absolute top-0 right-0 opacity-5 pointer-events-none" aria-hidden="true">
         <MuiscaSunIcon className="h-64 w-64 text-gold" />
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1370px] px-4 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-12">
           <div>
             <span className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-primary mb-2">
@@ -167,6 +158,13 @@ export default function AttractionsSection() {
           </div>
         </nav>
 
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <div key={n} className="h-[400px] animate-pulse rounded-2xl bg-muted/60" />
+            ))}
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAttractions.map((attraction) => (
             <AttractionCard
@@ -176,9 +174,8 @@ export default function AttractionsSection() {
             />
           ))}
         </div>
-
+        )}
       </div>
-
     </section>
   )
 }
