@@ -61,7 +61,7 @@ export function AdminHeader({
               Reporte mensual disponible
             </span>
             <span className="text-xs text-muted-foreground">
-              Estadísticas de Marzo 2024
+              Estadísticas de Marzo 2026
             </span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />

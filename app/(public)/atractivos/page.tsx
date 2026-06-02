@@ -56,8 +56,6 @@ export default function AttractionsSection() {
         const result = await response.json();
 
         if (result.success && result.data) {
-          // MAPEADOR: Transformamos el formato relacional de Laravel al formato plano del Card
-          // Modifica esta sección dentro del result.data.map en tu page.tsx:
           const visibleItems = result.data.filter((item: any) => {
             if (!item) return false;
             return item.isvisible === undefined || Boolean(item.isvisible) === true;
@@ -66,17 +64,19 @@ export default function AttractionsSection() {
 
           const mappedData: Attraction[] = (visibleItems || []).map((item: BackendAtractivo) => {
 
-            let imageUrl = "https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?q=80&w=800"; // Imagen por defecto
+            let imageUrl = "https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?q=80&w=800";
 
             if (item.fotos && item.fotos.length > 0) {
               const rawUrl = item.fotos[0].url_foto;
 
-              // Si el link es el formato de visualización de Drive, lo convertimos a link directo
-              if (rawUrl.includes("drive.google.com/file/d/")) {
-                // Extraemos el ID que está entre '/d/' y '/view'
+              if (rawUrl.includes("drive.google.com")) {
+                // Regex mejorada: Captura el ID clonado entre /d/ y la siguiente barra o fin de la cadena
                 const matches = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+
                 if (matches && matches[1]) {
-                  imageUrl = `https://drive.google.com/uc?export=view&id=${matches[1]}`;
+                  const driveId = matches[1];
+                  // Endpoint nativo de Google Fotos/Drive optimizado para visualización web directa
+                  imageUrl = `https://lh3.googleusercontent.com/u/0/d/${driveId}`;
                 } else {
                   imageUrl = rawUrl;
                 }

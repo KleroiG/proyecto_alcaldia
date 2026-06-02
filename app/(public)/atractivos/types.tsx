@@ -1,5 +1,5 @@
 // types.tsx
-export type AttractionCategory = "Todos" | "Arqueología" | "Naturaleza" | "Patrimonio" | "Aventura" | "Bienestar" | string;
+export type AttractionCategory = "Todos" | "Arqueología" | "Museo" | "Patrimonio" | "Parque Tematico" | "Sitio Turistico Cultural" | "Sitio Turistico Natural" | string;
 
 // 1. INTERFAZ FRONTEND (Mantiene compatibilidad con tarjetas y añade soporte para el modal)
 export interface Attraction {

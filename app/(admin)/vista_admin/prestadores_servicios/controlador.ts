@@ -1,18 +1,20 @@
 // prestadores-service.ts
-import type { Prestador } from "./page"
-import type { Guia } from "./seccion-guia"
+import type { Prestador } from "../prestadores_servicios/types"
+import type { Guia } from "../prestadores_servicios/seccion-guia"
+import { useAlert } from "@/components/global-alert"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
 const API_URL = `${BASE_URL}/api`
 
 
 async function safeFetchJson(url: string) {
+
     try {
         const response = await fetch(url)
 
         // Si la respuesta no es 200 OK, lanzamos una advertencia
         if (!response.ok) {
-            console.error(`❌ Error HTTP ${response.status} en la ruta: ${url}`)
+            console.error(`Error HTTP ${response.status} en la ruta: ${url}`)
             return { success: false, data: [] }
         }
 
@@ -21,11 +23,11 @@ async function safeFetchJson(url: string) {
         if (contentType && contentType.includes("application/json")) {
             return await response.json()
         } else {
-            console.error(`❌ La ruta ${url} devolvió HTML en lugar de JSON. Verifica routes/api.php`)
+            console.error(`La ruta ${url} devolvió HTML en lugar de JSON. Verifica routes/api.php`)
             return { success: false, data: [] }
         }
     } catch (error) {
-        console.error(`❌ Error de conexión con ${url}:`, error)
+        console.error(`Error de conexión con ${url}:`, error)
         return { success: false, data: [] }
     }
 }
@@ -44,6 +46,7 @@ export async function fetchAllPrestadoresYGuias() {
             safeFetchJson(`${API_URL}/guide`)
         ])
 
+
         const unifiedPrestadores: Prestador[] = []
 
         if (jsonHoteles.success && jsonHoteles.data) {
@@ -58,6 +61,7 @@ export async function fetchAllPrestadoresYGuias() {
                 telefono: h.celular || "N/A",
                 email: h.correo || "",
                 fotosOriginales: h.fotos || [],
+                isvisible: h.isvisible === true || h.isvisible === undefined,
             })))
         }
 
@@ -73,6 +77,7 @@ export async function fetchAllPrestadoresYGuias() {
                 telefono: r.celular || "N/A",
                 email: r.correo || "",
                 fotosOriginales: r.fotos || [],
+                isvisible: r.isvisible === true || r.isvisible === undefined,
             })))
         }
 
@@ -88,6 +93,7 @@ export async function fetchAllPrestadoresYGuias() {
                 telefono: a.celular || "N/A",
                 email: a.correo || "",
                 fotosOriginales: a.fotos || [],
+                isvisible: a.isvisible === true || a.isvisible === undefined,
             })))
         }
 
@@ -149,10 +155,10 @@ export async function savePrestadorService(
     }
 
     if (data.fotosAEliminar && data.fotosAEliminar.length > 0) {
-    data.fotosAEliminar.forEach((idFoto, index) => {
-      formData.append(`fotos_a_eliminar[${index}]`, idFoto.toString())
-    })
-  }
+        data.fotosAEliminar.forEach((idFoto, index) => {
+            formData.append(`fotos_a_eliminar[${index}]`, idFoto.toString())
+        })
+    }
 
     if (data.imageFiles && data.imageFiles.length > 0) {
         const fieldName = isEditing ? "nuevas_fotos" : "fotos"
@@ -213,4 +219,51 @@ export async function deleteGuiaService(guia: Guia) {
     const rawId = (guia as any).rawId || guia.id
     const response = await fetch(`${API_URL}/guias/${rawId}`, { method: "DELETE" })
     if (!response.ok) throw new Error("Error al eliminar guía")
+}
+
+// =========================================================================
+// 5. MODIFICAR VISIBILIDAD (PATCH)
+// =========================================================================
+export async function togglePrestadorVisibilityService(
+    rawId: number | string,
+    categoria: string,
+    isvisible: boolean
+) {
+    // CORRECCIÓN CRÍTICA: Rutas en singular y en inglés coincidiendo con Laravel
+    const endpointMap: Record<string, string> = {
+        Hotel: "hotel",
+        Restaurante: "restaurant",
+        Agencia: "agency",
+        Guia: "guide"
+    }
+
+    const rutaBase = endpointMap[categoria]
+    const url = `${API_URL}/${rutaBase}/${rawId}/visibility`
+
+    const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        // Enviamos el booleano puro para pasar la validación 'required|boolean'
+        body: JSON.stringify({ isvisible: isvisible }),
+    })
+
+    const textData = await response.text()
+
+    if (!response.ok) {
+        console.error(`❌ Error del backend en visibilidad (${response.status}):`, textData)
+        throw new Error(`Error HTTP: ${response.status}`)
+    }
+
+    try {
+        const result = textData ? JSON.parse(textData) : { success: true }
+        if (result.success === false) {
+            throw new Error(result.message || "El servidor rechazó el cambio lógico.")
+        }
+        return result
+    } catch (parseError) {
+        return { success: true }
+    }
 }

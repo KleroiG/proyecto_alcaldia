@@ -1,7 +1,7 @@
 // data.tsx
 import { Attraction, BackendAtractivo, AttractionCategory } from "./types";
 
-export const categories: AttractionCategory[] = ["Todos", "Arqueología", "Naturaleza", "Patrimonio", "Aventura", "Bienestar"];
+export const categories: AttractionCategory[] = ["Todos" , "Arqueología" , "Museo" , "Patrimonio" , "Parque Tematico" , "Sitio Turistico Cultural" , "Sitio Turistico Natural"];
 
 /**
  * Función Adaptadora: Convierte la respuesta de Laravel al formato visual de Next.js

@@ -29,10 +29,11 @@ interface ImageFile {
 
 const categories = [
   "Arqueología",
-  "Naturaleza",
+  "Museo",
+  "Parque Tematico",
   "Patrimonio",
-  "Aventura",
-  "Bienestar",
+  "Sitio Turistico Cultural",
+  "Sitio Turistico Natural",
 ]
 
 export function AttractionForm({ attraction, onBack, onSave }: AttractionFormProps) {

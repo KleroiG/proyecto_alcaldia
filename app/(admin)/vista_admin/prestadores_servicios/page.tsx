@@ -11,33 +11,14 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Search, Plus, Pencil, Trash2, MapPin, ImageIcon, Star, Phone, Loader2 } from "lucide-react"
 import { GuiaCard, type Guia } from "./seccion-guia"
 import { PrestadorForm } from "./prestadores-form"
-import { fetchAllPrestadoresYGuias, savePrestadorService, saveGuiaService, deletePrestadorService, deleteGuiaService } from "./controlador"
+import { fetchAllPrestadoresYGuias, savePrestadorService, saveGuiaService, deletePrestadorService, deleteGuiaService, togglePrestadorVisibilityService } from "./controlador"
+import { Switch } from "@/components/ui/switch"
+import type { Prestador } from "../prestadores_servicios/types"
 
-export interface Prestador {
-    id: string
-    nombre: string
-    descripcion: string
-    categoria: "Hotel" | "Restaurante" | "Agencia"
-    imageUrl: string
-    fotosOriginales?: any[]
-    direccion: string
-    telefono: string
-    email?: string
-    whatsapp?: string
-    instagram?: string
-    facebook?: string
-    website?: string
-    horario?: string
-    calificacion: number
-}
 
-// =========================================================================
-// 1. ORQUESTADOR PRINCIPAL
-// =========================================================================
+
 export default function AdminPrestadoresPage() {
     const [view, setView] = useState<"table" | "form">("table")
-    
-    // Estados de datos
     const [prestadores, setPrestadores] = useState<Prestador[]>([])
     const [guias, setGuias] = useState<Guia[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -47,7 +28,7 @@ export default function AdminPrestadoresPage() {
     const [currentGuia, setCurrentGuia] = useState<Guia | null>(null)
     const [formType, setFormType] = useState<"prestador" | "guia">("prestador")
 
-    // Cargar datos iniciales
+
     const loadData = async () => {
         setIsLoading(true)
         try {
@@ -65,11 +46,49 @@ export default function AdminPrestadoresPage() {
         loadData()
     }, [])
 
+    const handleToggleActivePrestador = async (id: string, isvisible: boolean) => {
+        const target = prestadores.find(p => p.id === id)
+        if (!target) return
+
+        setPrestadores(prev => prev.map(p => p.id === id ? { ...p, isvisible } : p))
+        try {
+            await togglePrestadorVisibilityService((target as any).rawId, target.categoria, isvisible)
+        } catch (error) {
+            setPrestadores(prev => prev.map(p => p.id === id ? { ...p, isvisible: !isvisible } : p))
+            alert("No se pudo cambiar la visibilidad.")
+        }
+    }
+
+    const handleDeletePrestador = async (id: string) => {
+        const prestador = prestadores.find(p => p.id === id)
+        if (prestador) {
+            try {
+                setPrestadores(prev => prev.filter(p => p.id !== id))
+                await deletePrestadorService(prestador)
+            } catch (error) {
+                loadData()
+                alert("Error al eliminar el prestador.")
+            }
+        }
+    }
+
+    const handleDeleteGuia = async (id: string) => {
+        const guia = guias.find(g => g.id === id)
+        if (guia) {
+            try {
+                setGuias(prev => prev.filter(g => g.id !== id))
+                await deleteGuiaService(guia)
+            } catch (error) {
+                loadData()
+                alert("Error al eliminar el guía.")
+            }
+        }
+    }
+
     // Manejadores de Guardado
     const handleSavePrestador = async (data: Partial<Prestador> & { imageFiles?: File[] }) => {
         try {
             await savePrestadorService(data, currentPrestador)
-            await loadData()
             setView("table")
             setCurrentPrestador(null)
         } catch (error) {
@@ -81,37 +100,11 @@ export default function AdminPrestadoresPage() {
     const handleSaveGuia = async (data: Partial<Guia>) => {
         try {
             await saveGuiaService(data, currentGuia)
-            await loadData()
             setView("table")
             setCurrentGuia(null)
         } catch (error) {
             console.error(error)
             alert("Ocurrió un error al guardar el guía.")
-        }
-    }
-
-    // Manejadores de Eliminación (Llamados desde la tabla)
-    const handleDeletePrestador = async (id: string) => {
-        const prestador = prestadores.find(p => p.id === id)
-        if (prestador) {
-            try {
-                await deletePrestadorService(prestador)
-                await loadData()
-            } catch (error) {
-                alert("Error al eliminar el prestador.")
-            }
-        }
-    }
-
-    const handleDeleteGuia = async (id: string) => {
-        const guia = guias.find(g => g.id === id)
-        if (guia) {
-            try {
-                await deleteGuiaService(guia)
-                await loadData()
-            } catch (error) {
-                alert("Error al eliminar el guía turístico.")
-            }
         }
     }
 
@@ -141,6 +134,7 @@ export default function AdminPrestadoresPage() {
             <PrestadoresTable
                 prestadores={prestadores}
                 guias={guias}
+                onToggleActive={handleToggleActivePrestador}
                 isLoading={isLoading}
                 onAdd={() => {
                     setFormType("prestador")
@@ -175,6 +169,7 @@ interface PrestadoresTableProps {
     isLoading: boolean
     onEditPrestador: (prestador: Prestador) => void
     onDeletePrestador: (id: string) => void
+    onToggleActive: (id: string, isvisible: boolean) => void
     onEditGuia: (guia: Guia) => void
     onDeleteGuia: (id: string) => void
     onAdd: () => void
@@ -200,6 +195,7 @@ export function PrestadoresTable({
     isLoading,
     onEditPrestador,
     onDeletePrestador,
+    onToggleActive,
     onEditGuia,
     onDeleteGuia,
     onAdd,
@@ -322,6 +318,7 @@ export function PrestadoresTable({
                                             <Skeleton className="h-4 w-1/2" />
                                             <Skeleton className="h-4 w-full" />
                                             <Skeleton className="h-4 w-full" />
+                                            <Skeleton className="h-4 w-full ml-10px" />
                                         </div>
                                     </div>
                                 </div>
@@ -361,16 +358,17 @@ export function PrestadoresTable({
                         <TableHeader>
                             <TableRow className="bg-gray-50 hover:bg-gray-50">
                                 <TableHead className="w-[80px]">Imagen</TableHead>
-                                <TableHead>Nombre</TableHead>
-                                <TableHead className="hidden md:table-cell">Categoría</TableHead>
-                                <TableHead className="hidden lg:table-cell">Ubicación</TableHead>
-                                <TableHead className="hidden lg:table-cell">Contacto</TableHead>
-                                <TableHead className="text-right pr-20">Acciones</TableHead>
+                                <TableHead className="w-[180px] md:w-[250px]">Nombre</TableHead>
+                                <TableHead className="hidden md:table-cell w-[120px]">Categoría</TableHead>
+                                <TableHead className="hidden lg:table-cell w-[150px]">Ubicación</TableHead>
+                                <TableHead className="hidden lg:table-cell w-[120px]">Contacto</TableHead>
+                                <TableHead className="text-center w-[120px]">Estado</TableHead>
+                                <TableHead className="text-right w-[100px] pr-8">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                Array.from({ length: 5 }).map((_, index) => (
+                                Array.from({ length: 6 }).map((_, index) => (
                                     <TableRow key={index}>
                                         <TableCell>
                                             <Skeleton className="h-12 w-12 rounded-lg" />
@@ -383,6 +381,9 @@ export function PrestadoresTable({
                                         </TableCell>
                                         <TableCell className="hidden lg:table-cell">
                                             <Skeleton className="h-4 w-[150px]" />
+                                        </TableCell>
+                                        <TableCell className="hidden lg:table-cell">
+                                            <Skeleton className="h-4 w-[120px]" />
                                         </TableCell>
                                         <TableCell className="hidden lg:table-cell">
                                             <Skeleton className="h-4 w-[120px]" />
@@ -426,13 +427,18 @@ export function PrestadoresTable({
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div>
-                                                <p className="font-medium text-gray-900">
+                                            <div className="flex flex-col">
+                                                <span
+                                                    className="font-medium text-gray-900 max-w-[180px] md:max-w-[250px] truncate"
+                                                    title={prestador.nombre}
+                                                >
                                                     {prestador.nombre}
-                                                </p>
-                                                <p className="text-sm text-gray-500 md:hidden">
-                                                    {prestador.categoria}
-                                                </p>
+                                                </span>
+                                                <span
+                                                    className="text-xs text-gray-500 max-w-[150px] md:max-w-[250px] truncate"
+                                                    title={prestador.nombre}
+                                                >
+                                                </span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="hidden md:table-cell">
@@ -458,7 +464,19 @@ export function PrestadoresTable({
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex items-center justify-end pr-17">
+                                            <div className="flex flex-col items-center justify-center gap-1">
+                                                <Switch
+                                                    checked={prestador.isvisible}
+                                                    onCheckedChange={(checked) => onToggleActive(prestador.id, checked)}
+                                                    aria-label={`${prestador.isvisible ? "Desactivar" : "Activar"} ${prestador.nombre}`}
+                                                />
+                                                <span className={`text-[10px] font-medium uppercase tracking-wider ${prestador.isvisible ? "text-emerald-600" : "text-gray-400"}`}>
+                                                    {prestador.isvisible ? "Activo" : "Inactivo"}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center justify-end gap-2 pr-4">
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"

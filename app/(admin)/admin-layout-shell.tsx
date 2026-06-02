@@ -62,7 +62,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
         switch (activeItem) {
             case "attractions":
                 return <AdminTourismPage />;
-            case "prestadores":
+            case "providers":
                 return <AdminPrestadoresPage />;
             case "roles":
                 return canOpenUserManagement ? <RoleManagement /> : <AccessDenied />

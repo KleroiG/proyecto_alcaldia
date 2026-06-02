@@ -28,10 +28,10 @@ export function Header() {
             <Image
               src="/images/LogoEscudoSogamoso.png"
               alt="Logo Sogamoso"
-              width={200}
-              height={200}
+              width={100}
+              height={100}
               priority
-              style={{ width: "auto", height: "auto" }}
+              className="w-55 h-auto"
             />
           </Link>
 

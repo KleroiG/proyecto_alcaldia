@@ -48,12 +48,7 @@ export function MobileSidebar({
     {
       label: "Prestadores de Servicios",
       icon: <Users className="size-5" />,
-      href: "prestadores",
-    },
-    {
-      label: "Servicios Culturales",
-      icon: <Palette className="size-5" />,
-      href: "cultural",
+      href: "providers",
     },
     {
       label: "Eventos",

@@ -43,18 +43,20 @@ interface AttractionsTableProps {
 const categories = [
   { value: "all", label: "Todas las categorías" },
   { value: "Arqueología", label: "Arqueología" },
-  { value: "Naturaleza", label: "Naturaleza" },
+  { value: "Museo", label: "Museo" },
+  { value: "Parque Tematico", label: "Parque Tematico" },
   { value: "Patrimonio", label: "Patrimonio" },
-  { value: "Aventura", label: "Aventura" },
-  { value: "Bienestar", label: "Bienestar" },
+  { value: "Sitio Turistico Cultural", label: "Sitio Turistico Cultural" },
+  { value: "Sitio Turistico Natural", label: "Sitio Turistico Natural" },
 ]
 
 const categoryColors: Record<string, string> = {
-  Arqueología: "bg-amber-100 text-amber-800 border-amber-200",
-  Naturaleza: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  Patrimonio: "bg-purple-100 text-purple-800 border-purple-200",
-  Aventura: "bg-orange-100 text-orange-800 border-orange-200",
-  Bienestar: "bg-sky-100 text-sky-800 border-sky-200",
+  Arqueología: "bg-gradient-to-r from-yellow-100 to-amber-200 text-amber-900 border border-amber-300 shadow-sm",
+  Museo: "bg-gradient-to-r from-cyan-100 to-teal-200 text-teal-900 border border-teal-300 shadow-sm",
+  Patrimonio: "bg-gradient-to-r from-pink-100 to-rose-200 text-rose-900 border border-rose-300 shadow-sm",
+  "Parque Tematico": "bg-gradient-to-r from-violet-100 to-fuchsia-200 text-fuchsia-900 border border-fuchsia-300 shadow-sm",
+  "Sitio Turistico Cultural": "bg-gradient-to-r from-orange-100 to-red-200 text-red-900 border border-red-300 shadow-sm",
+  "Sitio Turistico Natural": "bg-gradient-to-r from-sky-100 to-blue-200 text-blue-900 border border-blue-300 shadow-sm",
 }
 
 export function AttractionsTable({

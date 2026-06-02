@@ -58,8 +58,6 @@ export default function AdminTourismPage() {
     };
 
 
-
-
     // 2. CARGAR TODOS LOS ATRACTIVOS (GET /api/tourism)
     const fetchAttractions = async () => {
         setIsLoading(true)
