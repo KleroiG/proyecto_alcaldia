@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react"
 import { Suspense } from "react"
+import { gdriveUrl } from "@/lib/events"
 import { ProviderCard, type Provider } from "@/app/(public)/prestadores_servicios/provider-card"
 import { ProviderFilters } from "@/app/(public)/prestadores_servicios/provider-filters"
 import { useSearchParams } from "next/navigation"
@@ -55,8 +56,12 @@ export default function PrestadoresPage() {
             return visibleValue === undefined || visibleValue === true || visibleValue === 1 || visibleValue === "1";
           });
 
-          // 2. Guardamos solo los elementos validados como visibles
-          setProviders(visibleProviders)
+          // 2. Normalizamos imageUrl con gdriveUrl y guardamos
+          const mapped = visibleProviders.map((item: any) => ({
+            ...item,
+            imageUrl: gdriveUrl(item.imageUrl || item.url_foto || ""),
+          }))
+          setProviders(mapped)
         } else {
           throw new Error(json.message || "Error inesperado del servidor.")
         }

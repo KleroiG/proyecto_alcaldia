@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { gdriveUrl } from "@/lib/events"
 import { useParams, useSearchParams } from "next/navigation"
 import { MapPin, Clock, Phone, Globe, ArrowLeft, Star, Instagram, Facebook, MessageCircle, Share2, Navigation, Mail, User, Building2, UtensilsCrossed, Briefcase, BedDouble, Users, Car, PawPrint, Accessibility, ShieldCheck, ClipboardCheck, FileText, MapPinned, ChefHat, Utensils, BadgeCheck, Loader2 } from "lucide-react"
 import { Header } from "@/components/header"
@@ -91,21 +92,11 @@ export default function PrestadorDetailPage() {
                 // Si después de buscar en todo lado no hay respuesta, lanzamos un error global
                 if (!data) throw new Error("Prestador no encontrado en ninguna categoría")
 
-                // PASO 3: Formatear las imágenes procedentes de Google Drive
-                const fotosFormateadas = (data.fotos || []).map((foto: any, index: number) => {
-                    let urlFinal = foto.url_foto || foto.url
-                    if (urlFinal && urlFinal.includes("drive.google.com")) {
-                        const matches = urlFinal.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/)
-                        if (matches && matches[1]) {
-                            urlFinal = `https://drive.google.com/thumbnail?sz=w1000&id=${matches[1]}`
-                        }
-                    }
-                    return {
-                        id: foto.id_foto || index,
-                        url: urlFinal,
-                        alt: `Fotografía de ${data.nombre}`
-                    }
-                })
+                const fotosFormateadas = (data.fotos || []).map((foto: any, index: number) => ({
+                    id: foto.id_foto || index,
+                    url: gdriveUrl(foto.url_foto || foto.url || ""),
+                    alt: `Fotografía de ${data.nombre}`,
+                }))
 
                 if (fotosFormateadas.length === 0) {
                     fotosFormateadas.push({

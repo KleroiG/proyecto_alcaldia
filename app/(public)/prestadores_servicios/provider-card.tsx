@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
+import { gdriveUrl } from "@/lib/events"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { MapPin, Phone, ArrowRight, Facebook, Instagram, Globe, Mail } from "lucide-react"
@@ -56,18 +56,7 @@ export function ProviderCard({ provider }: ProviderCardProps) {
     /^[a-zA-Z_]+/,
     ""
   )
-  const getDriveImageUrl = (url: string | undefined): string => {
-    if (!url) return "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800";
-
-    // Si es un ID de Google Drive o un enlace directo, extraemos el ID para la API de renderizado directo
-    if (url.includes("drive.google.com")) {
-      const match = url.match(/(?:\/d\/|id=)([\w-]+)/);
-      if (match && match[1]) {
-        return ` https://drive.google.com/thumbnail?id=${match[1]}`;
-      }
-    }
-    return url;
-  };
+  const fallback = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800";
 
   const titleWords = provider.name.split(" ")
 
@@ -84,14 +73,14 @@ export function ProviderCard({ provider }: ProviderCardProps) {
       <div className="relative h-[380px] overflow-hidden">
 
         {/* Imagen */}
-        <Image
-          src={getDriveImageUrl(provider.imageUrl)}
+        <img
+          src={gdriveUrl(provider.imageUrl) || fallback}
           alt={provider.name}
-          fill
-          sizes="(max-width: 768px) 100vw, 33vw"
-          unoptimized={provider.imageUrl?.includes("drive.google.com")}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={(e) => { e.currentTarget.src = fallback }}
           className={cn(
-            "object-cover transition-all duration-700 group-hover:scale-110",
+            "absolute inset-0 h-full w-full object-cover transition-all duration-700 group-hover:scale-110",
             isExpanded
               ? "scale-110 brightness-50"
               : "group-hover:scale-110 group-hover:brightness-50"
