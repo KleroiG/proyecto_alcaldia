@@ -94,7 +94,6 @@ export async function fetchAllPrestadoresYGuias() {
         let normalizedGuias: Guia[] = []
         if (jsonGuias.success && jsonGuias.data) {
             // Debajo de: if (jsonGuias.success && jsonGuias.data) {
-            jsonGuias.data.forEach((g: any) => console.log("Estructura de guía recibida:", g));
             normalizedGuias = jsonGuias.data.map((g: any) => ({
                 ...g,
                 id: (g.id_guia || g.id).toString(),

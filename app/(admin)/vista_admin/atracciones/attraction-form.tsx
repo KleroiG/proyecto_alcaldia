@@ -206,20 +206,9 @@ export function AttractionForm({ attraction, onBack, onSave }: AttractionFormPro
   }
 
   const getDriveImage = (url: string) => {
-    console.log("URL ORIGINAL:", url);
-
     const match = url.match(/[-\w]{25,}/);
-
-    console.log("MATCH:", match?.[0]);
-
     if (!match) return url;
-
-    const finalUrl =
-      `https://drive.google.com/thumbnail?id=${match[0]}&sz=w2000`;
-
-    console.log("FINAL URL:", finalUrl);
-
-    return finalUrl;
+    return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w2000`;
   };
 
   return (

@@ -11,6 +11,14 @@ import { useSearchParams } from "next/navigation"
 import { MuiscaSunIcon } from "@/components/icon-sol"
 
 export default function PrestadoresPage() {
+  return (
+    <Suspense fallback={<div className="p-20 text-center text-gray-500">Cargando...</div>}>
+      <PrestadoresContent />
+    </Suspense>
+  )
+}
+
+function PrestadoresContent() {
   const searchParams = useSearchParams()
 
   // Estados de control asíncronos obligatorios
@@ -98,7 +106,6 @@ export default function PrestadoresPage() {
   })
 
   return (
-    <Suspense fallback={<div className="p-20 text-center">Cargando filtros...</div>}>
       <div className="min-h-screen bg-gray-50">
         <main className="mx-auto max-w-[1370px] px-4 sm:px-6 lg:px-8 py-8 pt-24">
           {/* Título de la sección */}
@@ -164,6 +171,5 @@ export default function PrestadoresPage() {
           )}
         </main>
       </div>
-    </Suspense>
   )
 }
