@@ -1,8 +1,8 @@
-import Image from "next/image"
 import Link from "next/link"
 import { CalendarDays, Clock, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { gdriveUrl } from "@/lib/events"
 import { cn } from "@/lib/utils"
 
 export type EventStatus = "upcoming" | "ongoing" | "finished" | "last-spots"
@@ -59,11 +59,12 @@ export function EventCard({
     <article className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-md transition-shadow hover:shadow-lg">
       {/* Image Section */}
       <div className="relative aspect-[16/10] overflow-hidden">
-        <Image
-          src={imageUrl}
+        <img
+          src={gdriveUrl(imageUrl)}
           alt={title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         {/* Status Badge */}
         <Badge

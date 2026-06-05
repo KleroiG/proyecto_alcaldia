@@ -38,7 +38,11 @@ export type RegisterPayload = {
 };
 
 function apiUrl(path: string) {
-  return `${API_BASE_URL}/${path.replace(/^\/+/, "")}`;
+  const clean = path.replace(/^\/+/, "");
+  if (API_BASE_URL.endsWith("/api")) {
+    return `${API_BASE_URL}/${clean}`;
+  }
+  return `${API_BASE_URL}/api/${clean}`;
 }
 
 async function readJsonResponse(response: Response) {

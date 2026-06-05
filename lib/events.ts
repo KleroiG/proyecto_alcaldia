@@ -74,10 +74,35 @@ export type EventPayload = {
   latitud: string;
   longitud: string;
   googlePlaceId: string;
-  urlFoto?: File | null;
+  urlFoto?: File | string | null;
   fotos?: File[];
   fotosAEliminar?: string[];
 };
+
+export function gdriveUrl(url: string): string {
+  if (!url) return "";
+
+  let fileId: string | null = null;
+
+  const m1 = url.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+  if (m1) fileId = m1[1];
+
+  if (!fileId) {
+    const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+    if (m2) fileId = m2[1];
+  }
+
+  if (!fileId) {
+    const m3 = url.match(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]{10,})/);
+    if (m3) fileId = m3[1];
+  }
+
+  if (fileId) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+  }
+
+  return url;
+}
 
 function apiUrl(path: string) {
   const cleanPath = path.replace(/^\/+/, "");

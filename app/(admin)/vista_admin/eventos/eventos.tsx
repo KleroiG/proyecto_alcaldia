@@ -3,15 +3,17 @@
 import { useEffect, useMemo, useState } from "react"
 import {
   CalendarCheck,
+  CheckCircle2,
   DollarSign,
-  ImagePlus,
   Loader2,
   Pencil,
   Plus,
   RefreshCcw,
   Trash2,
   Users,
+  X,
 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -54,6 +56,7 @@ import {
 import {
   createEvent,
   deleteEvent,
+  gdriveUrl,
   getEvents,
   updateEvent,
   type EventPayload,
@@ -63,7 +66,9 @@ import {
 
 type EventFormState = Omit<EventPayload, "urlFoto" | "fotos" | "fotosAEliminar"> & {
   urlFoto: File | null
+  urlFotoExistente: string
   fotos: File[]
+  fotosAEliminar: string[]
 }
 
 const emptyForm: EventFormState = {
@@ -83,7 +88,9 @@ const emptyForm: EventFormState = {
   longitud: "",
   googlePlaceId: "",
   urlFoto: null,
+  urlFotoExistente: "",
   fotos: [],
+  fotosAEliminar: [],
 }
 
 function toFormState(event: EventRecord): EventFormState {
@@ -104,7 +111,9 @@ function toFormState(event: EventRecord): EventFormState {
     longitud: event.longitud,
     googlePlaceId: event.googlePlaceId,
     urlFoto: null,
+    urlFotoExistente: "",
     fotos: [],
+    fotosAEliminar: [],
   }
 }
 
@@ -210,9 +219,19 @@ export function EventosAdmin() {
 
   const buildPayload = (): EventPayload => ({
     ...form,
-    urlFoto: form.urlFoto,
+    urlFoto: form.urlFoto ?? (form.urlFotoExistente || null),
     fotos: form.fotos,
+    fotosAEliminar: form.fotosAEliminar,
   })
+
+  const toggleFotoEliminar = (id: string) => {
+    setForm((prev) => ({
+      ...prev,
+      fotosAEliminar: prev.fotosAEliminar.includes(id)
+        ? prev.fotosAEliminar.filter((f) => f !== id)
+        : [...prev.fotosAEliminar, id],
+    }))
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -421,6 +440,7 @@ export function EventosAdmin() {
             </DialogDescription>
           </DialogHeader>
           <form className="grid gap-4" onSubmit={handleSubmit}>
+            {/* Campos básicos */}
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Nombre">
                 <Input required value={form.nombre} onChange={(e) => updateField("nombre", e.target.value)} />
@@ -458,51 +478,151 @@ export function EventosAdmin() {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Direccion">
+              <Field label="Dirección">
                 <Input required value={form.direccion} onChange={(e) => updateField("direccion", e.target.value)} />
               </Field>
-              <Field label="Latitud">
-                <Input value={form.latitud} onChange={(e) => updateField("latitud", e.target.value)} />
-              </Field>
-              <Field label="Longitud">
-                <Input value={form.longitud} onChange={(e) => updateField("longitud", e.target.value)} />
-              </Field>
-              <Field label="Google Place ID">
-                <Input value={form.googlePlaceId} onChange={(e) => updateField("googlePlaceId", e.target.value)} />
-              </Field>
-              <Field label="Foto principal">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => updateField("urlFoto", e.target.files?.[0] || null)}
-                />
-              </Field>
-              <Field label={editingEvent ? "Nuevas fotos" : "Fotos"}>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => updateField("fotos", Array.from(e.target.files || []))}
-                />
-              </Field>
             </div>
+
             <Field label="Descripcion">
               <Textarea required value={form.descripcion} onChange={(e) => updateField("descripcion", e.target.value)} />
             </Field>
             <Field label="Observaciones">
               <Textarea value={form.observaciones} onChange={(e) => updateField("observaciones", e.target.value)} />
             </Field>
-            <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <ImagePlus className="size-4" />
-              En edicion, las fotos seleccionadas se envian como nuevas_fotos[].
+
+            {/* Foto principal */}
+            <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-4">
+              <Label className="text-sm font-semibold">Foto principal</Label>
+
+              {editingEvent && (editingEvent.fotos.length > 0 || editingEvent.imageUrl) && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Selecciona una foto de la galería como foto principal:
+                  </p>
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                    {[
+                      ...(editingEvent.imageUrl ? [{ id: "__main__", url: editingEvent.imageUrl }] : []),
+                      ...editingEvent.fotos,
+                    ].map((foto) => {
+                      const isSelected = form.urlFotoExistente === foto.url
+                      return (
+                        <button
+                          key={foto.id}
+                          type="button"
+                          onClick={() => updateField("urlFotoExistente", isSelected ? "" : foto.url)}
+                          className={cn(
+                            "relative aspect-video overflow-hidden rounded-lg border-2 transition-all",
+                            isSelected
+                              ? "border-primary shadow-md"
+                              : "border-transparent hover:border-muted-foreground/40",
+                          )}
+                        >
+                          <img
+                            src={gdriveUrl(foto.url)}
+                            alt=""
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                          {isSelected && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-primary/20">
+                              <CheckCircle2 className="size-6 text-primary drop-shadow" />
+                            </div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  {editingEvent ? "O sube una nueva foto principal:" : "Sube la foto principal:"}
+                </p>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    updateField("urlFoto", e.target.files?.[0] || null)
+                    if (e.target.files?.[0]) updateField("urlFotoExistente", "")
+                  }}
+                />
+              </div>
+
+              {(form.urlFotoExistente || form.urlFoto) && (
+                <p className="text-xs text-emerald-600">
+                  {form.urlFoto ? "Se usará la nueva foto subida." : "Se usará la foto seleccionada de la galería."}
+                </p>
+              )}
             </div>
+
+            {/* Galería de fotos */}
+            <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-4">
+              <Label className="text-sm font-semibold">Galería de fotos</Label>
+
+              {editingEvent && editingEvent.fotos.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Haz clic en una foto para marcarla como eliminada:
+                  </p>
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                    {editingEvent.fotos.map((foto) => {
+                      const marcada = form.fotosAEliminar.includes(foto.id)
+                      return (
+                        <button
+                          key={foto.id}
+                          type="button"
+                          onClick={() => toggleFotoEliminar(foto.id)}
+                          className={cn(
+                            "relative aspect-video overflow-hidden rounded-lg border-2 transition-all",
+                            marcada
+                              ? "border-red-500 opacity-60"
+                              : "border-transparent hover:border-muted-foreground/40",
+                          )}
+                        >
+                          <img
+                            src={gdriveUrl(foto.url)}
+                            alt=""
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                          {marcada && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-red-500/30">
+                              <X className="size-6 text-red-600 drop-shadow" />
+                            </div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {form.fotosAEliminar.length > 0 && (
+                    <p className="text-xs text-red-600">
+                      {form.fotosAEliminar.length} foto(s) marcada(s) para eliminar al guardar.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Agregar nuevas fotos a la galería:</p>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => updateField("fotos", Array.from(e.target.files || []))}
+                />
+              </div>
+            </div>
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isSaving}>
+              <Button type="submit" disabled={isSaving} className="gap-2">
                 {isSaving && <Loader2 className="size-4 animate-spin" />}
-                Guardar
+                {isSaving ? "Guardando..." : "Guardar"}
               </Button>
             </DialogFooter>
           </form>

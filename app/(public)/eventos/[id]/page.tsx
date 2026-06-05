@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
@@ -16,7 +15,7 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { getEventById, type EventRecord } from "@/lib/events"
+import { gdriveUrl, getEventById, type EventRecord } from "@/lib/events"
 
 function formatDate(dateString: string) {
   if (!dateString) {
@@ -134,12 +133,12 @@ export default function EventDetailPage() {
           {!isLoading && !error && event && (
             <article className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
               <div className="relative aspect-[16/7] min-h-[260px] overflow-hidden bg-gray-200">
-                <Image
-                  src={event.imageUrl}
+                <img
+                  src={gdriveUrl(event.imageUrl)}
                   alt={event.nombre}
-                  fill
-                  priority
-                  className="object-cover"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white md:p-8">
@@ -172,7 +171,13 @@ export default function EventDetailPage() {
                       <div className="mt-4 grid gap-4 sm:grid-cols-2">
                         {event.fotos.map((foto) => (
                           <div key={foto.id || foto.url} className="relative aspect-video overflow-hidden rounded-lg bg-gray-100">
-                            <Image src={foto.url} alt={event.nombre} fill className="object-cover" />
+                            <img
+                              src={gdriveUrl(foto.url)}
+                              alt={event.nombre}
+                              loading="lazy"
+                              referrerPolicy="no-referrer"
+                              className="absolute inset-0 h-full w-full object-cover"
+                            />
                           </div>
                         ))}
                       </div>
