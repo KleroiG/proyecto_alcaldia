@@ -1,6 +1,6 @@
 "use client"
 
-import { Star, MapPin, Clock, ArrowRight } from "lucide-react"
+import { Clock, ArrowRight } from "lucide-react"
 import { gdriveUrl } from "@/lib/events"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
