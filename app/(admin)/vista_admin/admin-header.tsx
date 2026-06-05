@@ -11,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface AdminHeaderProps {
   userName?: string
@@ -37,20 +36,22 @@ export function AdminHeader({
             variant="ghost"
             className="hidden sm:flex items-center gap-3 px-2 hover:bg-muted"
           >
-            <Avatar className="size-8">
-              {avatarUrl && (
+            <div className="size-8 rounded-full overflow-hidden bg-primary flex items-center justify-center shrink-0">
+              {avatarUrl ? (
                 <img
                   src={avatarUrl}
                   alt={userName}
                   loading="lazy"
                   referrerPolicy="no-referrer"
-                  className="h-full w-full rounded-full object-cover"
+                  className="h-full w-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = "none" }}
                 />
+              ) : (
+                <span className="text-xs font-semibold text-primary-foreground">
+                  {userName.charAt(0).toUpperCase()}
+                </span>
               )}
-              <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                {userName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            </div>
             <div className="hidden md:flex flex-col items-start text-left">
               <span className="text-sm font-medium text-foreground">
                 {userName}

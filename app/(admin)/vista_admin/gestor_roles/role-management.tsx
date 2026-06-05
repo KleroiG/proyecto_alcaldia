@@ -233,8 +233,19 @@ export function RoleManagement() {
 
   const handleCreateUser = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setIsCreating(true)
     setCreateError("")
+
+    if (createForm.fecha_nacimiento) {
+      const born = new Date(createForm.fecha_nacimiento)
+      const minDate = new Date()
+      minDate.setFullYear(minDate.getFullYear() - 18)
+      if (born > minDate) {
+        setCreateError("El administrador debe tener al menos 18 años.")
+        return
+      }
+    }
+
+    setIsCreating(true)
     try {
       await createAdminUser(createForm)
       setCreateDialogOpen(false)
@@ -626,7 +637,10 @@ export function RoleManagement() {
                   id="create-nombre"
                   placeholder="Carlos"
                   value={createForm.nombre}
-                  onChange={(e) => updateCreateField("nombre", e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "")
+                    updateCreateField("nombre", v)
+                  }}
                   required
                 />
               </div>
@@ -636,7 +650,10 @@ export function RoleManagement() {
                   id="create-apellido"
                   placeholder="Gómez"
                   value={createForm.apellido}
-                  onChange={(e) => updateCreateField("apellido", e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "")
+                    updateCreateField("apellido", v)
+                  }}
                   required
                 />
               </div>
@@ -673,10 +690,23 @@ export function RoleManagement() {
                 <Input
                   id="create-fecha"
                   type="date"
+                  max={(() => {
+                    const d = new Date()
+                    d.setFullYear(d.getFullYear() - 18)
+                    return d.toISOString().split("T")[0]
+                  })()}
                   value={createForm.fecha_nacimiento}
                   onChange={(e) => updateCreateField("fecha_nacimiento", e.target.value)}
                   required
                 />
+                {createForm.fecha_nacimiento && (() => {
+                  const born = new Date(createForm.fecha_nacimiento)
+                  const minDate = new Date()
+                  minDate.setFullYear(minDate.getFullYear() - 18)
+                  return born > minDate
+                })() && (
+                  <p className="text-xs text-red-500 mt-1">El administrador debe tener al menos 18 años.</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="create-genero">Género</Label>
@@ -736,7 +766,10 @@ export function RoleManagement() {
                 type="tel"
                 placeholder="3001234567"
                 value={createForm.telefono}
-                onChange={(e) => updateCreateField("telefono", e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "")
+                  updateCreateField("telefono", v)
+                }}
                 required
               />
             </div>
