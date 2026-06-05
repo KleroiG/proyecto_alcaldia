@@ -34,6 +34,7 @@ export function Header() {
               width={300}
               height={120}
               priority
+              loading="eager"
               className="w-[220px] h-auto"
             />
           </Link>

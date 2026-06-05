@@ -36,7 +36,7 @@ export function AdminHeader({
             className="hidden sm:flex items-center gap-3 px-2 hover:bg-muted"
           >
             <Avatar className="size-8">
-              <AvatarImage src="/placeholder-avatar.jpg" alt={userName} />
+              <AvatarImage alt={userName} />
               <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                 {userName.charAt(0).toUpperCase()}
               </AvatarFallback>

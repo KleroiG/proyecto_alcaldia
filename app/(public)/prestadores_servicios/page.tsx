@@ -44,14 +44,18 @@ export default function PrestadoresPage() {
         const json = await response.json()
 
         if (json.success && json.data) {
-          // 1. Filtramos la data antes de guardarla en el estado
+          // 1. Filtramos la data validando de forma flexible tanto 'isvisible' como 'isVisible'
           const visibleProviders = json.data.filter((item: any) => {
             if (!item) return false;
-            // Validamos que sea true, 1 (Laravel tinyint) o undefined (por retrocompatibilidad)
-            return item.isvisible === undefined || item.isvisible === true || item.isvisible === 1;
+            
+            // 🔍 SOLUCCIÓN: Comprobamos de manera segura ambas variantes de casing (isvisible e isVisible)
+            const visibleValue = item.isvisible !== undefined ? item.isvisible : item.isVisible;
+
+            // Retornamos true si es explícitamente true, 1, o si viene indefinido (retrocompatibilidad)
+            return visibleValue === undefined || visibleValue === true || visibleValue === 1 || visibleValue === "1";
           });
 
-          // 2. Guardamos solo los elementos filtrados
+          // 2. Guardamos solo los elementos validados como visibles
           setProviders(visibleProviders)
         } else {
           throw new Error(json.message || "Error inesperado del servidor.")
@@ -75,10 +79,15 @@ export default function PrestadoresPage() {
 
   // Filtrado reactivo en memoria (Alta eficiencia en Front una vez descargados los datos)
   const filteredProviders = providers.filter((provider) => {
+    const isVisibleValue = provider.isvisible !== undefined ? provider.isvisible : (provider as any).isVisible;
+    const isHidden = isVisibleValue === false || isVisibleValue === 0 || isVisibleValue === "0";
+    if (isHidden) return false;
+
     const matchesCategory =
       selectedCategory === "all" || provider.category === categoryMap[selectedCategory]
     const matchesSearch =
       provider.name.toLowerCase().includes(searchQuery.toLowerCase())
+      
     return matchesCategory && matchesSearch
   })
 
@@ -112,8 +121,8 @@ export default function PrestadoresPage() {
 
           {/* Control de visualización: Cargando, Error o Resultados */}
           {isLoading ? (
-            <div className="grid gap-6 md:grid-cols-2">
-              {[1, 2, 3, 4].map((n) => (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div key={n} className="h-40 animate-pulse rounded-2xl bg-gray-200" />
               ))}
             </div>

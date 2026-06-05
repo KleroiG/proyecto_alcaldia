@@ -447,12 +447,12 @@ export default function PrestadorDetailPage() {
                                 </div>
 
                                 <h2 className="text-lg font-semibold text-gray-900">
-                                    Descripción turística
+                                    Descripción
                                 </h2>
                             </div>
 
                             <p className="text-gray-700 leading-relaxed whitespace-pre-line text-sm relative z-10">
-                                {prestador.destinos_principales ||
+                                {prestador.observaciones ||
                                     "Este prestador no ha definido una descripción turística detallada."}
                             </p>
                         </div>

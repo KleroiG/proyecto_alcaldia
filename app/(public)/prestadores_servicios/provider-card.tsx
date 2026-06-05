@@ -17,6 +17,7 @@ export type ProviderCategory =
   | "agencia"
 
 export interface Provider {
+  isvisible: boolean
   id: string | number
   name: string
   category: ProviderCategory
@@ -55,6 +56,18 @@ export function ProviderCard({ provider }: ProviderCardProps) {
     /^[a-zA-Z_]+/,
     ""
   )
+  const getDriveImageUrl = (url: string | undefined): string => {
+    if (!url) return "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800";
+
+    // Si es un ID de Google Drive o un enlace directo, extraemos el ID para la API de renderizado directo
+    if (url.includes("drive.google.com")) {
+      const match = url.match(/(?:\/d\/|id=)([\w-]+)/);
+      if (match && match[1]) {
+        return ` https://drive.google.com/thumbnail?id=${match[1]}`;
+      }
+    }
+    return url;
+  };
 
   const titleWords = provider.name.split(" ")
 
@@ -72,15 +85,13 @@ export function ProviderCard({ provider }: ProviderCardProps) {
 
         {/* Imagen */}
         <Image
-          src={
-            provider.imageUrl ||
-            "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800"
-          }
+          src={getDriveImageUrl(provider.imageUrl)}
           alt={provider.name}
           fill
-          sizes="(max-width:768px)100vw,33vw"
+          sizes="(max-width: 768px) 100vw, 33vw"
+          unoptimized={provider.imageUrl?.includes("drive.google.com")}
           className={cn(
-            "object-cover transition-all duration-700 group-hover:scale-117 group-hover:brightness-60",
+            "object-cover transition-all duration-700 group-hover:scale-110",
             isExpanded
               ? "scale-110 brightness-50"
               : "group-hover:scale-110 group-hover:brightness-50"

@@ -2,31 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Pencil, 
-  Trash2, 
-  Phone, 
-  Mail, 
-  MapPin,
-  Award,
-  Languages,
-  Calendar
-} from "lucide-react"
-
-export interface Guia {
-  id: string
-  nombre: string
-  apellido: string
-  documento: string
-  tipo_documento: string
-  telefono: string
-  email: string
-  direccion: string
-  idiomas: string[]
-  especialidades: string[]
-  fecha_registro: string
-  numero_tarjeta: string
-}
+import { Pencil, Trash2, Phone, Mail, MapPin, Award, Languages, Calendar } from "lucide-react"
+import { Guia } from "../types"
 
 interface GuiaCardProps {
   guia: Guia
@@ -104,10 +81,11 @@ export function GuiaCard({ guia, onEdit, onDelete }: GuiaCardProps) {
                 <Mail className="h-3.5 w-3.5 text-[#d4a84b]" />
                 <span className="truncate">{guia.email}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              {/*<div className="flex items-center gap-2 text-sm text-gray-600">
                 <MapPin className="h-3.5 w-3.5 text-[#d4a84b]" />
                 <span className="truncate">{guia.direccion}</span>
               </div>
+              */}
             </div>
           </div>
         </div>
@@ -122,9 +100,9 @@ export function GuiaCard({ guia, onEdit, onDelete }: GuiaCardProps) {
               </div>
               <div className="flex flex-wrap gap-1">
                 {guia.idiomas.map((idioma) => (
-                  <Badge 
-                    key={idioma} 
-                    variant="outline" 
+                  <Badge
+                    key={idioma}
+                    variant="outline"
                     className="text-[10px] bg-blue-50 text-blue-700 border-blue-200"
                   >
                     {idioma}
@@ -139,17 +117,17 @@ export function GuiaCard({ guia, onEdit, onDelete }: GuiaCardProps) {
               </div>
               <div className="flex flex-wrap gap-1">
                 {guia.especialidades.slice(0, 2).map((esp) => (
-                  <Badge 
-                    key={esp} 
-                    variant="outline" 
+                  <Badge
+                    key={esp}
+                    variant="outline"
                     className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200"
                   >
                     {esp}
                   </Badge>
                 ))}
                 {guia.especialidades.length > 2 && (
-                  <Badge 
-                    variant="outline" 
+                  <Badge
+                    variant="outline"
                     className="text-[10px] bg-gray-50 text-gray-600 border-gray-200"
                   >
                     +{guia.especialidades.length - 2}

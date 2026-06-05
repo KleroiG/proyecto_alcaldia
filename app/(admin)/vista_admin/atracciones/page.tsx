@@ -128,31 +128,31 @@ export function AttractionsTable({
             Agregar Atractivo
           </Button>
         </div>
-      </div>
-      <br></br>
+      </div> 
+      <br />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5 mr-5 ml-5">
         <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">Total Atractivos</p>
           <p className="text-2xl font-bold text-gray-900">
-            {attractions.length}
+            {isLoading ? "..." : attractions.length}
           </p>
         </div>
         <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">Activos</p>
           <p className="text-2xl font-bold text-emerald-600">
-            {attractions.filter((a) => a.isvisible).length}
+            {isLoading ? "..." : attractions.filter((a) => a.isvisible).length}
           </p>
         </div>
         <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">Inactivos</p>
           <p className="text-2xl font-bold text-gray-400">
-            {attractions.filter((a) => !a.isvisible).length}
+            {isLoading ? "..." : attractions.filter((a) => !a.isvisible).length}
           </p>
         </div>
         <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
           <p className="text-sm text-gray-500 mb-1">Categorías</p>
           <p className="text-2xl font-bold text-[#d4a84b]">
-            {new Set(attractions.map((a) => a.category)).size}
+            {isLoading ? "..." : new Set(attractions.map((a) => a.category)).size}
           </p>
         </div>
       </div>

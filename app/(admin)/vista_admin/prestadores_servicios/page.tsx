@@ -9,13 +9,20 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Search, Plus, Pencil, Trash2, MapPin, ImageIcon, Star, Phone, Loader2 } from "lucide-react"
-import { GuiaCard, type Guia } from "./seccion-guia"
+import { Guia } from "../prestadores_servicios/types"
+import { GuiaCard } from "./guias/seccion-guia"
 import { PrestadorForm } from "./prestadores-form"
-import { fetchAllPrestadoresYGuias, savePrestadorService, saveGuiaService, deletePrestadorService, deleteGuiaService, togglePrestadorVisibilityService } from "./controlador"
+import { fetchAllPrestadoresYGuias, savePrestadorService, saveGuiaService, deletePrestadorService, deleteGuiaService, togglePrestadorVisibilityService } from "./controlador-general"
 import { Switch } from "@/components/ui/switch"
 import type { Prestador } from "../prestadores_servicios/types"
 
-
+// 🛠️ FUNCIÓN GLOBAL: Adaptación para renderizar imágenes de Google Drive en las vistas públicas/tablas
+const getDriveImage = (url: string) => {
+    if (!url) return "";
+    const match = url.match(/[-\w]{25,}/);
+    if (!match) return url;
+    return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w2000`;
+};
 
 export default function AdminPrestadoresPage() {
     const [view, setView] = useState<"table" | "form">("table")
@@ -27,7 +34,6 @@ export default function AdminPrestadoresPage() {
     const [currentPrestador, setCurrentPrestador] = useState<Prestador | null>(null)
     const [currentGuia, setCurrentGuia] = useState<Guia | null>(null)
     const [formType, setFormType] = useState<"prestador" | "guia">("prestador")
-
 
     const loadData = async () => {
         setIsLoading(true)
@@ -89,6 +95,7 @@ export default function AdminPrestadoresPage() {
     const handleSavePrestador = async (data: Partial<Prestador> & { imageFiles?: File[] }) => {
         try {
             await savePrestadorService(data, currentPrestador)
+            await loadData() // ✅ CORRECCIÓN: Volvemos a consultar a Laravel para traer el listado fresco
             setView("table")
             setCurrentPrestador(null)
         } catch (error) {
@@ -100,6 +107,7 @@ export default function AdminPrestadoresPage() {
     const handleSaveGuia = async (data: Partial<Guia>) => {
         try {
             await saveGuiaService(data, currentGuia)
+            await loadData() // ✅ CORRECCIÓN: Sincroniza los guías creados/editados de inmediato en la UI
             setView("table")
             setCurrentGuia(null)
         } catch (error) {
@@ -113,9 +121,7 @@ export default function AdminPrestadoresPage() {
         return (
             <div className="container mx-auto p-6">
                 <PrestadorForm
-                    formType={formType}
-                    prestador={currentPrestador}
-                    guia={currentGuia}
+                    prestador={currentPrestador || currentGuia}
                     onBack={() => {
                         setView("table")
                         setCurrentPrestador(null)
@@ -128,7 +134,7 @@ export default function AdminPrestadoresPage() {
         )
     }
 
-    // Renderizado de la Tabla (La que me pasaste)
+    // Renderizado de la Tabla
     return (
         <div className="container mx-auto p-6 space-y-6">
             <PrestadoresTable
@@ -137,7 +143,6 @@ export default function AdminPrestadoresPage() {
                 onToggleActive={handleToggleActivePrestador}
                 isLoading={isLoading}
                 onAdd={() => {
-                    setFormType("prestador")
                     setCurrentPrestador(null)
                     setCurrentGuia(null)
                     setView("form")
@@ -160,7 +165,7 @@ export default function AdminPrestadoresPage() {
 }
 
 // =========================================================================
-// 2. COMPONENTE DE INTERFAZ DE USUARIO (El código exacto que enviaste)
+// 2. COMPONENTE DE INTERFAZ DE USUARIO
 // =========================================================================
 
 interface PrestadoresTableProps {
@@ -205,13 +210,19 @@ export function PrestadoresTable({
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [deleteType, setDeleteType] = useState<"prestador" | "guia">("prestador")
 
+
+    const countHoteles = prestadores.filter((p) => p.categoria === "Hotel").length
+    const countRestaurantes = prestadores.filter((p) => p.categoria === "Restaurante").length
+    const countAgencias = prestadores.filter((p) => p.categoria === "Agencia").length
+    const countGuias = guias.length
+
     const filteredPrestadores = useMemo(() => {
         if (categoryFilter === "Guia") return []
 
         return prestadores.filter((prestador) => {
             const matchesSearch =
                 prestador.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                prestador.direccion.toLowerCase().includes(searchQuery.toLowerCase())
+                prestador.direccion?.toLowerCase().includes(searchQuery.toLowerCase())
             const matchesCategory =
                 categoryFilter === "all" || prestador.categoria === categoryFilter
             return matchesSearch && matchesCategory
@@ -252,6 +263,8 @@ export function PrestadoresTable({
         return prestadores.filter(p => p.categoria === categoryFilter).length
     }
 
+
+
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Table Header */}
@@ -272,6 +285,34 @@ export function PrestadoresTable({
                         <Plus className="mr-2 h-4 w-4" />
                         Agregar Prestador
                     </Button>
+                </div>
+            </div>
+            {/* 📊 SECCIÓN DE MÉTRICAS / TARJETAS DE DISEÑO */}
+            <br />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5 mr-5 ml-5">
+                <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm transition-all hover:shadow-md">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Total Hoteles</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                        {isLoading ? "..." : countHoteles}
+                    </p>
+                </div>
+                <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm transition-all hover:shadow-md">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Total Restaurantes</p>
+                    <p className="text-2xl font-bold text-emerald-600">
+                        {isLoading ? "..." : countRestaurantes}
+                    </p>
+                </div>
+                <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm transition-all hover:shadow-md">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Total Agencias</p>
+                    <p className="text-2xl font-bold text-purple-600">
+                        {isLoading ? "..." : countAgencias}
+                    </p>
+                </div>
+                <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm transition-all hover:shadow-md">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Total Guias</p>
+                    <p className="text-2xl font-bold text-[#d4a84b]">
+                        {isLoading ? "..." : countGuias}
+                    </p>
                 </div>
             </div>
 
@@ -304,7 +345,6 @@ export function PrestadoresTable({
 
             {/* Content */}
             {showGuias ? (
-                // Guias Grid - ID Card Style
                 <div className="p-6">
                     {isLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -318,7 +358,6 @@ export function PrestadoresTable({
                                             <Skeleton className="h-4 w-1/2" />
                                             <Skeleton className="h-4 w-full" />
                                             <Skeleton className="h-4 w-full" />
-                                            <Skeleton className="h-4 w-full ml-10px" />
                                         </div>
                                     </div>
                                 </div>
@@ -327,11 +366,7 @@ export function PrestadoresTable({
                     ) : filteredGuias.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12 text-gray-500">
                             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                                <svg
-                                    className="w-8 h-8 text-gray-400"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
+                                <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                                 </svg>
                             </div>
@@ -352,7 +387,6 @@ export function PrestadoresTable({
                     )}
                 </div>
             ) : (
-                // Regular Table for Hotels, Restaurants, Agencies
                 <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>
@@ -370,54 +404,37 @@ export function PrestadoresTable({
                             {isLoading ? (
                                 Array.from({ length: 6 }).map((_, index) => (
                                     <TableRow key={index}>
-                                        <TableCell>
-                                            <Skeleton className="h-12 w-12 rounded-lg" />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Skeleton className="h-4 w-[180px]" />
-                                        </TableCell>
-                                        <TableCell className="hidden md:table-cell">
-                                            <Skeleton className="h-6 w-[100px] rounded-full" />
-                                        </TableCell>
-                                        <TableCell className="hidden lg:table-cell">
-                                            <Skeleton className="h-4 w-[150px]" />
-                                        </TableCell>
-                                        <TableCell className="hidden lg:table-cell">
-                                            <Skeleton className="h-4 w-[120px]" />
-                                        </TableCell>
-                                        <TableCell className="hidden lg:table-cell">
-                                            <Skeleton className="h-4 w-[120px]" />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Skeleton className="h-8 w-20 ml-auto" />
-                                        </TableCell>
+                                        <TableCell><Skeleton className="h-12 w-12 rounded-lg" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-[180px]" /></TableCell>
+                                        <TableCell className="hidden md:table-cell"><Skeleton className="h-6 w-[100px] rounded-full" /></TableCell>
+                                        <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-[150px]" /></TableCell>
+                                        <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-[120px]" /></TableCell>
+                                        <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
                                     </TableRow>
                                 ))
                             ) : filteredPrestadores.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-32 text-center">
+                                    <TableCell colSpan={7} className="h-32 text-center">
                                         <div className="flex flex-col items-center justify-center text-gray-500">
                                             <ImageIcon className="h-10 w-10 mb-2 text-gray-300" />
                                             <p className="font-medium">No se encontraron prestadores</p>
-                                            <p className="text-sm">
-                                                Intenta con otros términos de búsqueda
-                                            </p>
+                                            <p className="text-sm">Intenta con otros términos de búsqueda</p>
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 filteredPrestadores.map((prestador) => (
-                                    <TableRow
-                                        key={prestador.id}
-                                        className="group hover:bg-gray-50 transition-colors"
-                                    >
+                                    <TableRow key={prestador.id} className="group hover:bg-gray-50 transition-colors">
                                         <TableCell>
                                             <div className="h-12 w-12 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
                                                 {prestador.imageUrl ? (
+                                                    /* ✅ ADAPTACIÓN: Renderizado seguro para enlaces de Google Drive en las miniaturas de la tabla */
                                                     <img
-                                                        src={prestador.imageUrl}
+                                                        src={getDriveImage(prestador.imageUrl)}
                                                         alt={prestador.nombre}
                                                         className="h-full w-full object-cover"
+                                                        loading="lazy"
+                                                        referrerPolicy="no-referrer"
                                                     />
                                                 ) : (
                                                     <div className="h-full w-full flex items-center justify-center">
@@ -428,24 +445,13 @@ export function PrestadoresTable({
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col">
-                                                <span
-                                                    className="font-medium text-gray-900 max-w-[180px] md:max-w-[250px] truncate"
-                                                    title={prestador.nombre}
-                                                >
+                                                <span className="font-medium text-gray-900 max-w-[180px] md:max-w-[250px] truncate" title={prestador.nombre}>
                                                     {prestador.nombre}
-                                                </span>
-                                                <span
-                                                    className="text-xs text-gray-500 max-w-[150px] md:max-w-[250px] truncate"
-                                                    title={prestador.nombre}
-                                                >
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="hidden md:table-cell">
-                                            <Badge
-                                                variant="outline"
-                                                className={categoryColors[prestador.categoria] || ""}
-                                            >
+                                            <Badge variant="outline" className={categoryColors[prestador.categoria] || ""}>
                                                 {prestador.categoria}
                                             </Badge>
                                         </TableCell>
@@ -453,7 +459,7 @@ export function PrestadoresTable({
                                             <div className="flex items-center gap-1 text-gray-600">
                                                 <MapPin className="h-3.5 w-3.5 text-[#d4a84b]" />
                                                 <span className="text-sm truncate max-w-[180px]">
-                                                    {prestador.direccion}
+                                                    {prestador.direccion || "Sogamoso"}
                                                 </span>
                                             </div>
                                         </TableCell>
