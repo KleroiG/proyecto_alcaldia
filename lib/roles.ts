@@ -1,12 +1,6 @@
 "use client";
 
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api"
-).replace(/\/+$/, "");
-
-function apiUrl(path: string) {
-  return `${API_BASE_URL}/${path.replace(/^\/+/, "")}`;
-}
+import { apiUrl, API_ORIGIN } from "./api";
 
 function getAuthHeaders(): HeadersInit {
   const token =
@@ -76,7 +70,7 @@ function normalizeUrl(url: unknown): string {
   if (typeof url !== "string" || !url.trim()) return "";
   const clean = url.trim();
   if (/^https?:\/\//i.test(clean)) return clean;
-  const origin = API_BASE_URL.replace(/\/api$/, "");
+  const origin = API_ORIGIN;
   return `${origin}/${clean.replace(/^\/+/, "")}`;
 }
 

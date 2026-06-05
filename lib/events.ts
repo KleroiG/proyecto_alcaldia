@@ -1,8 +1,6 @@
 "use client";
 
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api"
-).replace(/\/+$/, "");
+import { apiUrl as _apiUrl, API_BASE as API_BASE_URL, API_ORIGIN } from "./api";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&h=500&fit=crop";
@@ -105,13 +103,7 @@ export function gdriveUrl(url: string): string {
 }
 
 function apiUrl(path: string) {
-  const cleanPath = path.replace(/^\/+/, "");
-
-  if (API_BASE_URL.endsWith("/api")) {
-    return `${API_BASE_URL}/${cleanPath}`;
-  }
-
-  return `${API_BASE_URL}/api/${cleanPath}`;
+  return _apiUrl(path);
 }
 
 async function readJsonResponse(response: Response) {
@@ -178,7 +170,7 @@ function normalizeUrl(url: unknown) {
     return cleanUrl;
   }
 
-  const origin = API_BASE_URL.replace(/\/api$/, "");
+  const origin = API_ORIGIN;
   return `${origin}/${cleanUrl.replace(/^\/+/, "")}`;
 }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { gdriveUrl } from "@/lib/events"
+import { apiUrl } from "@/lib/api"
 import { useParams } from "next/navigation"
 import { MapPin, Clock, Phone, Globe, ArrowLeft, Star, DollarSign, Instagram, Facebook, MessageCircle, Share2, Navigation } from "lucide-react"
 import { Header } from "@/components/header"
@@ -35,7 +36,7 @@ export default function AtractivoDetailPage() {
     const fetchAtractivo = async () => {
       try {
         setCargando(true)
-        const response = await fetch(`http://127.0.0.1:8000/api/tourism/${id}`)
+        const response = await fetch(apiUrl(`tourism/${id}`))
 
         if (!response.ok) throw new Error("No se pudo cargar el atractivo")
 

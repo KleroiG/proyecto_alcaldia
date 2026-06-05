@@ -34,15 +34,7 @@ interface PerfilDialogProps {
   onProfileUpdate: (updated: AuthProfile) => void
 }
 
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api"
-).replace(/\/+$/, "")
-
-function apiUrl(path: string) {
-  const clean = path.replace(/^\/+/, "")
-  if (API_BASE_URL.endsWith("/api")) return `${API_BASE_URL}/${clean}`
-  return `${API_BASE_URL}/api/${clean}`
-}
+import { apiUrl } from "@/lib/api"
 
 function getInitials(name: string) {
   return name

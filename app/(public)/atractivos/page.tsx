@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { gdriveUrl } from "@/lib/events"
+import { apiUrl } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { MuiscaSunIcon } from "@/components/icon-sol"
 import { Filter, ChevronRight, Loader2 } from "lucide-react"
@@ -49,8 +50,7 @@ export default function AttractionsSection() {
   useEffect(() => {
     const fetchAtractivos = async () => {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-        const response = await fetch(`${baseUrl}/api/tourism`);
+        const response = await fetch(apiUrl("tourism"));
 
         if (!response.ok) throw new Error('Error en la red');
 

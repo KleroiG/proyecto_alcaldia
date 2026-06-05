@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { gdriveUrl } from "@/lib/events"
+import { apiUrl } from "@/lib/api"
 import { useParams, useSearchParams } from "next/navigation"
 import { MapPin, Clock, Phone, Globe, ArrowLeft, Star, Instagram, Facebook, MessageCircle, Share2, Navigation, Mail, User, Building2, UtensilsCrossed, Briefcase, BedDouble, Users, Car, PawPrint, Accessibility, ShieldCheck, ClipboardCheck, FileText, MapPinned, ChefHat, Utensils, BadgeCheck, Loader2 } from "lucide-react"
 import { Header } from "@/components/header"
@@ -38,7 +39,6 @@ export default function PrestadorDetailPage() {
         const fetchPrestador = async () => {
             try {
                 setCargando(true)
-                const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
 
                 let data = null
                 let finalCategory = ""
@@ -55,7 +55,7 @@ export default function PrestadorDetailPage() {
                     const target = endpoints.find(e => e.frontendCat === typeParam || e.key === typeParam)
                     if (target) {
                         try {
-                            const res = await fetch(`${baseUrl}/api/${target.route}/${id}`)
+                            const res = await fetch(apiUrl(`${target.route}/${id}`))
                             if (res.ok) {
                                 const result = await res.json()
                                 if (result.success || result.id || result.id_prestador) {
@@ -73,7 +73,7 @@ export default function PrestadorDetailPage() {
                 if (!data) {
                     for (const endpoint of endpoints) {
                         try {
-                            const res = await fetch(`${baseUrl}/api/${endpoint.route}/${id}`)
+                            const res = await fetch(apiUrl(`${endpoint.route}/${id}`))
                             if (res.ok) {
                                 const result = await res.json()
                                 // Si el backend responde exitosamente o devuelve el objeto con id

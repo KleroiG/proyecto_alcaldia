@@ -2,8 +2,7 @@
 import type { Prestador, Guia } from "./types"
 import { useAlert } from "@/components/global-alert"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
-const API_URL = `${BASE_URL}/api`
+import { apiUrl, API_BASE as API_URL } from "@/lib/api"
 
 
 async function safeFetchJson(url: string) {

@@ -1,8 +1,6 @@
 "use client";
 
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
-).replace(/\/+$/, "");
+import { apiUrl as _apiUrl } from "./api";
 
 export const AUTH_TOKEN_KEY = "sogamoso_auth_token";
 export const AUTH_USER_KEY = "sogamoso_auth_user";
@@ -38,11 +36,7 @@ export type RegisterPayload = {
 };
 
 function apiUrl(path: string) {
-  const clean = path.replace(/^\/+/, "");
-  if (API_BASE_URL.endsWith("/api")) {
-    return `${API_BASE_URL}/${clean}`;
-  }
-  return `${API_BASE_URL}/api/${clean}`;
+  return _apiUrl(path);
 }
 
 async function readJsonResponse(response: Response) {

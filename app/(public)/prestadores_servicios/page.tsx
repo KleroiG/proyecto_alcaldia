@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react"
 import { Suspense } from "react"
 import { gdriveUrl } from "@/lib/events"
+import { apiUrl } from "@/lib/api"
 import { ProviderCard, type Provider } from "@/app/(public)/prestadores_servicios/provider-card"
 import { ProviderFilters } from "@/app/(public)/prestadores_servicios/provider-filters"
 import { useSearchParams } from "next/navigation"
@@ -36,7 +37,7 @@ export default function PrestadoresPage() {
         setIsLoading(true)
         setError(null)
 
-        const response = await fetch("http://localhost:8000/api/prestadores-turisticos")
+        const response = await fetch(apiUrl("prestadores-turisticos"))
 
         if (!response.ok) {
           throw new Error("No se pudo obtener la información de los prestadores.")

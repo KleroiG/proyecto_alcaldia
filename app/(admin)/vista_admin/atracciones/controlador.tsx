@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { AttractionsTable, Attraction } from "../atracciones/page"
 import { AttractionForm } from "../atracciones/attraction-form"
 import { useAlert } from "@/components/global-alert"
+import { apiUrl } from "@/lib/api"
 
 
 
@@ -15,7 +16,6 @@ export default function AdminTourismPage() {
 
     const { showAlert } = useAlert()
 
-    const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
 
 
     // 1. Modificar Visibilidad (PATCH /api/tourism/{id}/visibility)
@@ -28,7 +28,7 @@ export default function AdminTourismPage() {
         );
 
         try {
-            const response = await fetch(`${BASE_URL}/api/tourism/${id}/visibility`, {
+            const response = await fetch(apiUrl(`tourism/${id}/visibility`), {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -62,7 +62,7 @@ export default function AdminTourismPage() {
     const fetchAttractions = async () => {
         setIsLoading(true)
         try {
-            const response = await fetch(`${BASE_URL}/api/tourism`)
+            const response = await fetch(apiUrl("tourism"))
             if (!response.ok) throw new Error("Error en el servidor")
             const result = await response.json()
 
@@ -164,13 +164,13 @@ export default function AdminTourismPage() {
             if (currentAttraction) {
                 // EDICIÓN: Simulación de PUT mediante POST usando '_method'
                 formData.append("_method", "PUT")
-                response = await fetch(`${BASE_URL}/api/tourism/${currentAttraction.id}`, {
+                response = await fetch(apiUrl(`tourism/${currentAttraction.id}`), {
                     method: "POST",
                     body: formData,
                 })
             } else {
                 // CREACIÓN: POST limpio sin ID prefijado
-                response = await fetch(`${BASE_URL}/api/tourism/register`, {
+                response = await fetch(apiUrl("tourism/register"), {
                     method: "POST",
                     body: formData,
                 })
@@ -209,7 +209,7 @@ export default function AdminTourismPage() {
     // 3. ELIMINAR ATRACTIVO (DELETE /api/tourism/{id})
     const handleDelete = async (id: string) => {
         try {
-            const response = await fetch(`${BASE_URL}/api/tourism/${id}`, {
+            const response = await fetch(apiUrl(`tourism/${id}`), {
                 method: "DELETE",
                 headers: {
                     "Accept": "application/json",
