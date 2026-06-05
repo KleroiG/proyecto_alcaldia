@@ -131,8 +131,13 @@ export async function login(payload: LoginPayload) {
   const token = extractToken(data);
   let profile = extractProfile(data);
 
-  if (!profile) {
-    profile = await getProfileByEmail(payload.correo).catch(() => null);
+  // Always fetch the full profile to ensure perm_* fields are included,
+  // since some login responses omit permission fields.
+  const fullProfile = await getProfileByEmail(payload.correo).catch(() => null);
+  if (fullProfile) {
+    profile = { ...profile, ...fullProfile };
+  } else if (!profile) {
+    profile = null;
   }
 
   saveSession(token, profile, data);
