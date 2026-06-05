@@ -1,7 +1,7 @@
 "use client"
 
-import Image from "next/image"
 import { Star, MapPin, Clock, ArrowRight } from "lucide-react"
+import { gdriveUrl } from "@/lib/events"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -43,19 +43,13 @@ export function AttractionCard({ attraction, onLearnMore }: AttractionCardProps)
     >
       {/* Imagen */}
       <div className={cn("relative overflow-hidden", featured ? "h-[420px]" : "h-[380px]")}>
-        <Image
-          src={imageSrc}
+        <img
+          src={gdriveUrl(imageSrc)}
           alt={`Imagen representativa de ${title || "Atractivo Turístico"}`}
-          fill
-          priority={featured}
           loading="lazy"
-          className=" object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75 "
-          sizes={featured ? "(max-width: 768px) 100vw, 66vw" : "(max-width: 640px) 100vw, 33vw"}
-          onError={() => {
-            setImageSrc(
-              "https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?q=80&w=800"
-            )
-          }}
+          referrerPolicy="no-referrer"
+          onError={() => setImageSrc("https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?q=80&w=800")}
+          className="absolute inset-0 h-full w-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75"
         />
 
         {/* Overlay */}

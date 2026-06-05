@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { gdriveUrl } from "@/lib/events"
 import { useParams } from "next/navigation"
 import { MapPin, Clock, Phone, Globe, ArrowLeft, Star, DollarSign, Instagram, Facebook, MessageCircle, Share2, Navigation } from "lucide-react"
 import { Header } from "@/components/header"
@@ -41,22 +42,11 @@ export default function AtractivoDetailPage() {
         const result = await response.json()
         const data = result.data || result
 
-        // Formateamos las fotos para arreglar los enlaces de Google Drive (evitar error CORS)
-        const fotosFormateadas = (data.fotos || []).map((foto: any, index: number) => {
-          let urlFinal = foto.url_foto;
-          if (urlFinal && urlFinal.includes("drive.google.com")) {
-            const matches = urlFinal.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-            if (matches && matches[1]) {
-              urlFinal = `https://drive.google.com/thumbnail?id=${matches[1]}&sz=w2000`;
-            }
-          }
-          return {
-            id: foto.id_foto || index,
-            url: urlFinal,
-            loading: "lazy",
-            alt: `Fotografía de ${data.nombre}`
-          }
-        });
+        const fotosFormateadas = (data.fotos || []).map((foto: any, index: number) => ({
+          id: foto.id_foto || index,
+          url: gdriveUrl(foto.url_foto || ""),
+          alt: `Fotografía de ${data.nombre}`,
+        }));
 
         // Si el atractivo no tiene fotos en la base de datos, usamos un fallback temporal
         if (fotosFormateadas.length === 0) {

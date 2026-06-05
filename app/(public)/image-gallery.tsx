@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { gdriveUrl } from "@/lib/events"
 
 interface ImageGalleryProps {
   images: {
@@ -42,13 +42,12 @@ export function ImageGallery({ images, nombre }: ImageGalleryProps) {
     <div className="space-y-4">
       {/* Main Image */}
       <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-gray-100 group">
-        <Image
-          src={images[currentIndex].url}
+        <img
+          src={gdriveUrl(images[currentIndex].url)}
           alt={images[currentIndex].alt || `${nombre} - Imagen ${currentIndex + 1}`}
-          fill
-          sizes="(max-width: 768px) 100vw, 80vw"
-          className="object-cover transition-transform duration-500"
-          priority
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500"
         />
         
         {/* Navigation Arrows */}
@@ -96,12 +95,12 @@ export function ImageGallery({ images, nombre }: ImageGalleryProps) {
               )}
               aria-label={`Ver imagen ${index + 1}`}
             >
-              <Image
-                src={image.url}
+              <img
+                src={gdriveUrl(image.url)}
                 alt={image.alt || `Miniatura ${index + 1}`}
-                fill
-                sizes="112px"
-                className="object-cover"
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                className="absolute inset-0 h-full w-full object-cover"
               />
             </button>
           ))}

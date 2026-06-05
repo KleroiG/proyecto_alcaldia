@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { gdriveUrl } from "@/lib/events"
 import { Button } from "@/components/ui/button"
 import { MuiscaSunIcon } from "@/components/icon-sol"
 import { Filter, ChevronRight, Loader2 } from "lucide-react"
@@ -64,26 +65,12 @@ export default function AttractionsSection() {
 
           const mappedData: Attraction[] = (visibleItems || []).map((item: BackendAtractivo) => {
 
-            let imageUrl = "https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?q=80&w=800";
-
-            if (item.fotos && item.fotos.length > 0) {
-              const rawUrl = item.fotos[0].url_foto;
-
-              if (rawUrl.includes("drive.google.com")) {
-                // Regex mejorada: Captura el ID clonado entre /d/ y la siguiente barra o fin de la cadena
-                const matches = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
-
-                if (matches && matches[1]) {
-                  const driveId = matches[1];
-                  // Endpoint nativo de Google Fotos/Drive optimizado para visualización web directa
-                  imageUrl = `https://drive.google.com/thumbnail?id=${matches[1]}&sz=w2000`;
-                } else {
-                  imageUrl = rawUrl;
-                }
-              } else {
-                imageUrl = rawUrl;
-              }
-            }
+            const rawUrl = item.fotos && item.fotos.length > 0
+              ? item.fotos[0].url_foto
+              : "";
+            const imageUrl = rawUrl
+              ? gdriveUrl(rawUrl)
+              : "https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?q=80&w=800";
 
             return {
               id: item.id_atractivo_turistico,
