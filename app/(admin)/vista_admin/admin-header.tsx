@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, ChevronDown, LogOut, User, Settings } from "lucide-react"
+import { ChevronDown, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -16,15 +16,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 interface AdminHeaderProps {
   userName?: string
   userRole?: string
-  notificationCount?: number
+  avatarUrl?: string
   onLogout?: () => void
+  onProfileClick?: () => void
 }
 
 export function AdminHeader({
   userName = "Administrador",
   userRole = "Superadministrador",
-  notificationCount = 3,
+  avatarUrl,
   onLogout,
+  onProfileClick,
 }: AdminHeaderProps) {
   return (
     <div className="flex items-center gap-2 sm:gap-4">
@@ -36,7 +38,15 @@ export function AdminHeader({
             className="hidden sm:flex items-center gap-3 px-2 hover:bg-muted"
           >
             <Avatar className="size-8">
-              <AvatarImage alt={userName} />
+              {avatarUrl && (
+                <img
+                  src={avatarUrl}
+                  alt={userName}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  className="h-full w-full rounded-full object-cover"
+                />
+              )}
               <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                 {userName.charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -58,13 +68,9 @@ export function AdminHeader({
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={onProfileClick}>
             <User className="mr-2 size-4" />
             <span>Perfil</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className="mr-2 size-4" />
-            <span>Configuración</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

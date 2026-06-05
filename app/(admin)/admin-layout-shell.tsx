@@ -10,7 +10,9 @@ import { EventosAdmin } from "./vista_admin/eventos/eventos"
 import { GraficasAdmin } from "./vista_admin/estadisticas/graficas"
 import AdminTourismPage from "./vista_admin/atracciones/controlador"
 import AdminPrestadoresPage from "./vista_admin/prestadores_servicios/page"
+import { PerfilDialog } from "./vista_admin/perfil-dialog"
 import { AuthProfile, canAccessAdmin, canManageUsers, clearSession, getAllowedAdminSections, getInitialAdminSection, getProfileName, getProfileRole, getStoredProfile, getStoredToken } from "@/lib/auth"
+import { gdriveUrl } from "@/lib/events"
 import { ROUTES } from "@/lib/routes"
 
 
@@ -19,6 +21,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
     const [collapsed, setCollapsed] = useState(false)
     const [profile, setProfile] = useState<AuthProfile | null>(null)
     const [isCheckingSession, setIsCheckingSession] = useState(true)
+    const [perfilOpen, setPerfilOpen] = useState(false)
     const router = useRouter()
 
     useEffect(() => {
@@ -111,7 +114,9 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
                         <AdminHeader
                             userName={getProfileName(profile)}
                             userRole={getProfileRole(profile)}
+                            avatarUrl={gdriveUrl(String(profile?.url_foto ?? profile?.avatar ?? ""))}
                             onLogout={handleLogout}
+                            onProfileClick={() => setPerfilOpen(true)}
                         />
                     </div>
                 </header>
@@ -123,6 +128,13 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
                         </div>
                     </main>
                 </div>
+
+                <PerfilDialog
+                    open={perfilOpen}
+                    onOpenChange={setPerfilOpen}
+                    profile={profile}
+                    onProfileUpdate={(updated) => setProfile(updated)}
+                />
             </div>
         </div>
     )

@@ -1,0 +1,281 @@
+"use client"
+
+import { useRef, useState } from "react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import {
+  Camera,
+  CheckCircle2,
+  Loader2,
+  Mail,
+  Shield,
+  ShieldCheck,
+  XCircle,
+} from "lucide-react"
+import { type AuthProfile, getProfileName, getProfileRole, isSuperAdmin, saveSession, getStoredToken } from "@/lib/auth"
+import { gdriveUrl } from "@/lib/events"
+
+interface PerfilDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  profile: AuthProfile | null
+  onProfileUpdate: (updated: AuthProfile) => void
+}
+
+const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api"
+).replace(/\/+$/, "")
+
+function apiUrl(path: string) {
+  const clean = path.replace(/^\/+/, "")
+  if (API_BASE_URL.endsWith("/api")) return `${API_BASE_URL}/${clean}`
+  return `${API_BASE_URL}/api/${clean}`
+}
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+}
+
+function getAvatarUrl(profile: AuthProfile | null): string {
+  if (!profile) return ""
+  const raw = String(profile.url_foto ?? profile.avatar ?? profile.foto ?? "")
+  return raw ? gdriveUrl(raw) : ""
+}
+
+export function PerfilDialog({ open, onOpenChange, profile, onProfileUpdate }: PerfilDialogProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [message, setMessage] = useState("")
+  const [error, setError] = useState("")
+  const [previewUrl, setPreviewUrl] = useState("")
+
+  const name = getProfileName(profile)
+  const role = getProfileRole(profile)
+  const correo = String(profile?.correo ?? "")
+  const telefono = String(profile?.telefono ?? "")
+  const genero = String(profile?.genero ?? "")
+  const fechaNacimiento = String(profile?.fecha_nacimiento ?? "")
+  const avatarUrl = previewUrl || getAvatarUrl(profile)
+  const superadmin = isSuperAdmin(profile)
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Preview local
+    const localUrl = URL.createObjectURL(file)
+    setPreviewUrl(localUrl)
+
+    const id = String(profile?.id_perfil ?? profile?.id ?? "")
+    if (!id) return
+
+    setIsUploading(true)
+    setMessage("")
+    setError("")
+
+    try {
+      const token = typeof window !== "undefined"
+        ? (localStorage.getItem("sogamoso_auth_token") ?? localStorage.getItem("token"))
+        : null
+
+      const formData = new FormData()
+      formData.append("_method", "PUT")
+      formData.append("id_perfil", id)
+      formData.append("correo", correo)
+      formData.append("nombre", String(profile?.nombre ?? ""))
+      formData.append("apellido", String(profile?.apellido ?? ""))
+      formData.append("url_foto", file)
+
+      const headers: Record<string, string> = { Accept: "application/json" }
+      if (token) headers["Authorization"] = `Bearer ${token}`
+
+      const response = await fetch(apiUrl(`/profiles/${encodeURIComponent(id)}`), {
+        method: "POST",
+        headers,
+        body: formData,
+      })
+
+      const data = response.headers.get("content-type")?.includes("application/json")
+        ? await response.json()
+        : null
+
+      if (!response.ok) {
+        const msg = data?.message ?? data?.error ?? "No se pudo actualizar la foto."
+        throw new Error(msg)
+      }
+
+      // Actualiza el perfil en localStorage con la nueva URL si viene en la respuesta
+      const newFotoUrl: string =
+        data?.data?.url_foto ?? data?.url_foto ?? ""
+
+      const updatedProfile: AuthProfile = {
+        ...profile,
+        url_foto: newFotoUrl || (profile?.url_foto as string),
+      }
+
+      saveSession(getStoredToken(), updatedProfile, data)
+      onProfileUpdate(updatedProfile)
+      setMessage("Foto de perfil actualizada correctamente.")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al subir la foto.")
+      setPreviewUrl("")
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {superadmin ? (
+              <ShieldCheck className="size-5 text-amber-500" />
+            ) : (
+              <Shield className="size-5 text-primary" />
+            )}
+            Mi Perfil
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-5">
+          {/* Avatar + cambiar foto */}
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative">
+              <div className="size-24 rounded-full ring-4 ring-primary/20 overflow-hidden bg-primary flex items-center justify-center">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={name}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none"
+                    }}
+                  />
+                ) : (
+                  <span className="text-2xl font-semibold text-primary-foreground">
+                    {getInitials(name)}
+                  </span>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition disabled:opacity-50"
+                title="Cambiar foto de perfil"
+              >
+                {isUploading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Camera className="size-4" />
+                )}
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            <div className="text-center">
+              <p className="text-base font-semibold text-foreground">{name}</p>
+              <Badge
+                variant="secondary"
+                className={
+                  superadmin
+                    ? "mt-1 bg-amber-100 text-amber-800 border border-amber-200 text-xs"
+                    : "mt-1 bg-primary/10 text-primary text-xs"
+                }
+              >
+                {superadmin ? (
+                  <span className="flex items-center gap-1">
+                    <ShieldCheck className="size-3" /> Superadministrador
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <Shield className="size-3" /> {role}
+                  </span>
+                )}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Feedback */}
+          {message && (
+            <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+              <CheckCircle2 className="size-4 shrink-0 text-green-600" />
+              {message}
+            </div>
+          )}
+          {error && (
+            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <XCircle className="size-4 shrink-0 text-red-500" />
+              {error}
+            </div>
+          )}
+
+          {/* Info fields */}
+          <div className="divide-y divide-border rounded-xl border border-border overflow-hidden">
+            <InfoRow icon={<Mail className="size-4" />} label="Correo" value={correo} />
+            {telefono && <InfoRow label="Teléfono" value={telefono} />}
+            {genero && <InfoRow label="Género" value={genero} />}
+            {fechaNacimiento && (
+              <InfoRow
+                label="Fecha de nacimiento"
+                value={new Date(`${fechaNacimiento}T00:00:00`).toLocaleDateString("es-CO", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              />
+            )}
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground">
+            Haz clic en el ícono de cámara para cambiar tu foto de perfil.
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon?: React.ReactNode
+  label: string
+  value: string
+}) {
+  if (!value) return null
+  return (
+    <div className="flex items-center gap-3 bg-muted/20 px-4 py-3">
+      {icon && <span className="text-muted-foreground">{icon}</span>}
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className="truncate text-sm font-medium text-foreground">{value}</p>
+      </div>
+    </div>
+  )
+}
