@@ -70,6 +70,8 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
                 return <EventosAdmin />
             case "dashboard":
                 return <GraficasAdmin />
+            case "sin-permisos":
+                return <SinPermisos />
             default:
                 return children || <div className="p-4">Seccion en desarrollo...</div>
         }
@@ -130,6 +132,35 @@ function AccessDenied() {
     return (
         <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
             No tienes permisos para acceder a esta seccion.
+        </div>
+    )
+}
+
+function SinPermisos() {
+    return (
+        <div className="flex min-h-[60vh] items-center justify-center">
+            <div className="mx-auto max-w-md text-center space-y-6">
+                <div className="flex justify-center">
+                    <div className="flex size-20 items-center justify-center rounded-full bg-primary/10">
+                        <svg className="size-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                        </svg>
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <h2 className="text-xl font-bold text-foreground">
+                        Sin permisos asignados
+                    </h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                        Tu cuenta aún no tiene acceso a ningún módulo del sistema.
+                        Comunícate con un superadministrador para que te asigne los permisos correspondientes.
+                    </p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 px-6 py-4 text-sm text-muted-foreground">
+                    Contacta al administrador del sistema y solicita que habilite los módulos que necesitas desde la sección{" "}
+                    <span className="font-semibold text-foreground">Gestión de Roles</span>.
+                </div>
+            </div>
         </div>
     )
 }

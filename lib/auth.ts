@@ -344,7 +344,7 @@ export function getAllowedAdminSections(profile: AuthProfile | null) {
     sections.push("events");
   }
 
-  if (isAdmin(profile) || isPermissionEnabled(profile.perm_estadisticas)) {
+  if (isPermissionEnabled(profile.perm_estadisticas)) {
     sections.unshift("dashboard");
   }
 
@@ -356,5 +356,5 @@ export function getInitialAdminSection(profile: AuthProfile | null) {
     return "roles";
   }
 
-  return getAllowedAdminSections(profile)[0] || "dashboard";
+  return getAllowedAdminSections(profile)[0] || "sin-permisos";
 }
