@@ -112,6 +112,15 @@ const EMPTY_CREATE_FORM: CreateAdminPayload = {
   tipo_identificacion: "",
 }
 
+const getDirectDriveLink = (url: string | null | undefined): string | undefined => {
+  if (!url || url.trim() === "") return undefined;
+  const match = url.match(/\/d\/(.+?)\//);
+  if (match && match[1]) {
+    return `https://lh3.googleusercontent.com/d/${match[1]}`
+  }
+  return url
+}
+
 function getAccessDescription(permissions: AdminPermissions): string {
   const active = MODULE_INFO.filter((m) => permissions[m.key])
   if (active.length === 0) return "Este usuario no tiene acceso a ningún módulo del sistema."
@@ -155,6 +164,12 @@ function UserCardSkeleton() {
     </div>
   )
 }
+const getMaxDateFor18YearsOld = () => {
+  const d = new Date()
+  d.setFullYear(d.getFullYear() - 18)
+  return d.toISOString().split("T")[0]
+}
+const MAX_DATE = getMaxDateFor18YearsOld()
 
 export function RoleManagement() {
   const [users, setUsers] = useState<AdminUser[]>([])
@@ -406,7 +421,7 @@ export function RoleManagement() {
                       )}
                     >
                       <Avatar className="size-20 sm:size-24">
-                        <AvatarImage src={user.avatar} alt={user.nombre} className="object-cover" />
+                        <AvatarImage src={getDirectDriveLink(user.url_foto)} alt={user.nombre} className="object-cover" />
                         <AvatarFallback className="bg-primary text-primary-foreground text-xl">
                           {getInitials(user.nombre, user.apellido)}
                         </AvatarFallback>
@@ -460,7 +475,7 @@ export function RoleManagement() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
                 <Avatar className="size-14">
-                  <AvatarImage src={selectedUser.avatar} alt={selectedUser.nombre} className="object-cover" />
+                  <AvatarImage src={getDirectDriveLink(selectedUser.url_foto)} alt={selectedUser.nombre} className="object-cover" />
                   <AvatarFallback className="bg-primary text-primary-foreground text-lg">
                     {getInitials(selectedUser.nombre, selectedUser.apellido)}
                   </AvatarFallback>
@@ -615,7 +630,13 @@ export function RoleManagement() {
       )}
 
       {/* Create Admin Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+      <Dialog open={createDialogOpen} onOpenChange={(open) => {
+        setCreateDialogOpen(open)
+        if (!open) {
+          setCreateForm(EMPTY_CREATE_FORM)
+          setCreateError("")
+        }
+      }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -635,7 +656,7 @@ export function RoleManagement() {
                 <Label htmlFor="create-nombre">Nombre</Label>
                 <Input
                   id="create-nombre"
-                  placeholder="Carlos"
+                  placeholder=""
                   value={createForm.nombre}
                   onChange={(e) => {
                     const v = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "")
@@ -648,7 +669,7 @@ export function RoleManagement() {
                 <Label htmlFor="create-apellido">Apellido</Label>
                 <Input
                   id="create-apellido"
-                  placeholder="Gómez"
+                  placeholder=""
                   value={createForm.apellido}
                   onChange={(e) => {
                     const v = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "")
@@ -690,11 +711,7 @@ export function RoleManagement() {
                 <Input
                   id="create-fecha"
                   type="date"
-                  max={(() => {
-                    const d = new Date()
-                    d.setFullYear(d.getFullYear() - 18)
-                    return d.toISOString().split("T")[0]
-                  })()}
+                  max={MAX_DATE}
                   value={createForm.fecha_nacimiento}
                   onChange={(e) => updateCreateField("fecha_nacimiento", e.target.value)}
                   required
@@ -705,8 +722,8 @@ export function RoleManagement() {
                   minDate.setFullYear(minDate.getFullYear() - 18)
                   return born > minDate
                 })() && (
-                  <p className="text-xs text-red-500 mt-1">El administrador debe tener al menos 18 años.</p>
-                )}
+                    <p className="text-xs text-red-500 mt-1">El administrador debe tener al menos 18 años.</p>
+                  )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="create-genero">Género</Label>
@@ -748,12 +765,16 @@ export function RoleManagement() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="create-id-perfil">Número de documento</Label>
-                <Input
+                <input
                   id="create-id-perfil"
                   type="text"
                   placeholder="1234567890"
                   value={createForm.id_perfil ?? ""}
-                  onChange={(e) => updateCreateField("id_perfil", e.target.value)}
+                  onChange={(e) => {
+                    const soloNumeros = e.target.value.replace(/[^0-9]/g, "");
+                    const limiteCaracteres = soloNumeros.slice(0, 11);
+                    updateCreateField("id_perfil", limiteCaracteres);
+                  }}
                   required
                 />
               </div>
@@ -764,11 +785,12 @@ export function RoleManagement() {
               <Input
                 id="create-telefono"
                 type="tel"
-                placeholder="3001234567"
+                placeholder="300XXXXXX"
                 value={createForm.telefono}
                 onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, "")
-                  updateCreateField("telefono", v)
+                  const soloNumeros = e.target.value.replace(/[^0-9]/g, "");
+                  const limiteCaracteres = soloNumeros.slice(0, 10);
+                  updateCreateField("telefono", limiteCaracteres);
                 }}
                 required
               />

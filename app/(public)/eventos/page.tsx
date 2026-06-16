@@ -149,7 +149,7 @@ export default function EventsPage() {
 
           {!isLoading && !error && events.length === 0 && (
             <div className="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600">
-              Aun no hay eventos registrados en el backend.
+              Aun no hay eventos registrados.
             </div>
           )}
 

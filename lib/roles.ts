@@ -41,7 +41,7 @@ export type AdminUser = {
   apellido: string;
   correo: string;
   role: "superadmin" | "admin";
-  avatar: string;
+  url_foto: string;
   permissions: AdminPermissions;
 };
 
@@ -80,7 +80,7 @@ function mapUser(raw: Record<string, unknown>): AdminUser {
   const apellido = String(raw.apellido ?? "");
   const correo = String(raw.correo ?? "");
   const role = mapRole(raw.role ?? raw.rol ?? raw.id_perfil);
-  const avatar = normalizeUrl(raw.url_foto ?? raw.foto ?? raw.avatar);
+  const url_foto = normalizeUrl(raw.url_foto);
 
   return {
     id,
@@ -88,7 +88,7 @@ function mapUser(raw: Record<string, unknown>): AdminUser {
     apellido,
     correo,
     role,
-    avatar,
+    url_foto,
     permissions: {
       perm_atractivos: boolVal(raw.perm_atractivos),
       perm_prestadores_servicios: boolVal(raw.perm_prestadores_servicios),

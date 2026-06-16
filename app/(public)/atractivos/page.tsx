@@ -59,7 +59,9 @@ export default function AttractionsSection() {
         if (result.success && result.data) {
           const visibleItems = result.data.filter((item: any) => {
             if (!item) return false;
-            return item.isvisible === undefined || Boolean(item.isvisible) === true;
+            const visibleValue = item.isvisible !== undefined ? item.isvisible : item.isVisible;
+            // Retorna true si es undefined, true, 1, o la cadena "1"
+            return visibleValue === undefined || visibleValue === true || visibleValue === 1 || visibleValue === "1";
           });
 
 

@@ -7,6 +7,7 @@ import { AdminHeader } from "./vista_admin/admin-header"
 import { MobileSidebar } from "./vista_admin/mobile-sidebar"
 import { RoleManagement } from "./vista_admin/gestor_roles/role-management"
 import { EventosAdmin } from "./vista_admin/eventos/eventos"
+import { ServiciosCulturalesPage } from "./vista_admin/servicios_culturales/servicios_culturales"
 import { GraficasAdmin } from "./vista_admin/estadisticas/graficas"
 import AdminTourismPage from "./vista_admin/atracciones/controlador"
 import AdminPrestadoresPage from "./vista_admin/prestadores_servicios/page"
@@ -46,7 +47,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
     }, [router])
 
     const allowedSections = getAllowedAdminSections(profile)
-    const canOpenUserManagement = canManageUsers(profile)
+    const canOpenUserManagement = profile?.role === 1
 
     const handleNavigate = (item: string) => {
         if (!allowedSections.includes(item)) {
@@ -73,6 +74,8 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
                 return <EventosAdmin />
             case "dashboard":
                 return <GraficasAdmin />
+            case "cultural-services":
+                return <ServiciosCulturalesPage />
             case "sin-permisos":
                 return <SinPermisos />
             default:
@@ -89,7 +92,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <div className="flex min-h-screen bg-background">
+        <div className="flex h-screen w-full overflow-hidden bg-slate-50">
             <div className="hidden lg:block">
                 <AdminSidebar
                     isSuperadmin={canOpenUserManagement}
@@ -102,14 +105,16 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex flex-1 flex-col overflow-hidden">
-                <header className="flex h-16 items-center gap-2 border-b border-border bg-card px-4 lg:px-6">
+                <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-gray-200/80 bg-white/80 backdrop-blur-md px-4 lg:px-6 shadow-sm">
                     <MobileSidebar
                         isSuperadmin={canOpenUserManagement}
                         allowedItems={allowedSections}
                         activeItem={activeItem}
                         onNavigate={handleNavigate}
                     />
-                    <h1 className="text-lg font-semibold">Panel Administrativo</h1>
+                    <h1 className="text-sm md:text-base font-bold tracking-tight text-gray-800 uppercase">
+                        Panel de Administración
+                    </h1>
                     <div className="ml-auto">
                         <AdminHeader
                             userName={getProfileName(profile)}
@@ -122,8 +127,8 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
                 </header>
 
                 <div className="flex flex-1 flex-col overflow-hidden">
-                    <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50">
-                        <div className="mx-auto max-w-7xl">
+                    <main className="flex-1 overflow-y-auto">
+                        <div className="mx-auto max-w-7xl animate-fade-in transition-all duration-300">
                             {renderContent()}
                         </div>
                     </main>

@@ -383,7 +383,7 @@ export default function AtractivoDetailPage() {
 
                       {atractivo.facebook && (
                         <a
-                          href={atractivo.facebook}
+                          href={`${atractivo.facebook}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-12 h-12 rounded-full bg-[#1877F2] flex items-center justify-center hover:scale-110 transition-all duration-300 shadow-sm"

@@ -407,9 +407,6 @@ export function PerfilDialog({ open, onOpenChange, profile, onProfileUpdate }: P
             )}
           </div>
 
-          <p className="text-center text-xs text-muted-foreground">
-            Haz clic en el ícono de cámara para cambiar tu foto de perfil.
-          </p>
         </div>
       </DialogContent>
     </Dialog>
