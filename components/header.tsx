@@ -14,6 +14,7 @@ const navLinks = [
   { href: ROUTES.atractivos, label: "Atractivos" },
   { href: ROUTES.eventos, label: "Eventos" },
   { href: ROUTES.prestadores, label: "Prestadores" },
+  { href: ROUTES.serviciosCulturales, label: "Servicios Culturales" },
 ]
 
 export function Header() {

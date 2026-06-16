@@ -6,4 +6,5 @@ export const ROUTES = {
   admin:         "/vista_admin",
   autenticacion: "/autenticacion",
   atractivos:      "/atractivos",
+  serviciosCulturales: "/servicios_culturales",
 } as const

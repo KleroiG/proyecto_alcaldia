@@ -15,6 +15,7 @@ const footerLinks = {
   explore: [
     { label: "Atractivos turísticos", href: "/atractivos" },
     { label: "Eventos", href: "/eventos" },
+    { label: "Servicios culturales", href: "/servicios_culturales" },
   ],
   services: [
     { label: "Hospedaje", href: "/prestadores_servicios?category=hoteles" },
