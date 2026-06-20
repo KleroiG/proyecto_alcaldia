@@ -32,7 +32,7 @@ export type AdminPermissions = {
   perm_prestadores_servicios: boolean;
   perm_servicios_culturales: boolean;
   perm_agenda_eventos: boolean;
-  perm_estadisticas: boolean;
+  perm_dashboard: boolean;
 };
 
 export type AdminUser = {
@@ -94,7 +94,7 @@ function mapUser(raw: Record<string, unknown>): AdminUser {
       perm_prestadores_servicios: boolVal(raw.perm_prestadores_servicios),
       perm_servicios_culturales: boolVal(raw.perm_servicios_culturales),
       perm_agenda_eventos: boolVal(raw.perm_agenda_eventos),
-      perm_estadisticas: boolVal(raw.perm_estadisticas),
+      perm_dashboard: boolVal(raw.perm_dashboard ?? raw.perm_estadisticas),
     },
   };
 }
@@ -141,7 +141,7 @@ export async function updateUserPermissions(
   formData.append("perm_prestadores_servicios", permissions.perm_prestadores_servicios ? "1" : "0");
   formData.append("perm_servicios_culturales", permissions.perm_servicios_culturales ? "1" : "0");
   formData.append("perm_agenda_eventos", permissions.perm_agenda_eventos ? "1" : "0");
-  formData.append("perm_estadisticas", permissions.perm_estadisticas ? "1" : "0");
+  formData.append("perm_dashboard", permissions.perm_dashboard ? "1" : "0");
 
   const response = await fetch(apiUrl(`/profiles/${encodeURIComponent(user.id)}`), {
     method: "POST",

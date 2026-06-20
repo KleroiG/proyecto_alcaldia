@@ -93,8 +93,8 @@ const MODULE_INFO = [
     description: "Administración de eventos y agenda",
   },
   {
-    key: "perm_estadisticas" as const,
-    label: "Estadísticas",
+    key: "perm_dashboard" as const,
+    label: "Estadísticas (Dashboard)",
     icon: BarChart3,
     description: "Acceso a métricas y reportes",
   },

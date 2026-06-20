@@ -285,17 +285,16 @@ export function hasFullAdminPermissions(profile: AuthProfile | null) {
     return true;
   }
 
-  const hasStatisticsPermission = Object.prototype.hasOwnProperty.call(
-    profile,
-    "perm_estadisticas",
-  );
+  const hasDashboardPermission = Object.prototype.hasOwnProperty.call(profile, "perm_dashboard");
+  const hasStatsPermission = Object.prototype.hasOwnProperty.call(profile, "perm_estadisticas");
+  const dashboardEnabled = isPermissionEnabled(profile.perm_dashboard) || isPermissionEnabled(profile.perm_estadisticas);
 
   return (
     isPermissionEnabled(profile.perm_atractivos) &&
     isPermissionEnabled(profile.perm_prestadores_servicios) &&
     isPermissionEnabled(profile.perm_servicios_culturales) &&
     isPermissionEnabled(profile.perm_agenda_eventos) &&
-    (!hasStatisticsPermission || isPermissionEnabled(profile.perm_estadisticas))
+    (!(hasDashboardPermission || hasStatsPermission) || dashboardEnabled)
   );
 }
 
@@ -317,7 +316,7 @@ export function getAllowedAdminSections(profile: AuthProfile | null) {
   }
 
   if (canManageUsers(profile)) {
-    return ["roles", "dashboard", "attractions", "providers", "cultural", "events"];
+    return ["roles", "dashboard", "attractions", "providers", "cultural-services", "events"];
   }
 
   const sections: string[] = [];
@@ -331,14 +330,14 @@ export function getAllowedAdminSections(profile: AuthProfile | null) {
   }
 
   if (isPermissionEnabled(profile.perm_servicios_culturales)) {
-    sections.push("cultural");
+    sections.push("cultural-services");
   }
 
   if (isPermissionEnabled(profile.perm_agenda_eventos)) {
     sections.push("events");
   }
 
-  if (isPermissionEnabled(profile.perm_estadisticas)) {
+  if (isPermissionEnabled(profile.perm_dashboard) || isPermissionEnabled(profile.perm_estadisticas)) {
     sections.unshift("dashboard");
   }
 

@@ -129,20 +129,24 @@ export function ServiciosCulturalesPage() {
   const [services, setServices] = useState<CulturalService[]>([])
   const [areas, setAreas] = useState<ArtisticArea[]>([])
   const [profiles, setProfiles] = useState<ProfileTypeSc[]>([])
-  
+
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  
+  const [selectedArea, setSelectedArea] = useState<string>("all")
+  const [selectedProfile, setSelectedProfile] = useState<string>("all")
+  const [fetchingServiceId, setFetchingServiceId] = useState<number | null>(null)
+
   // Modales principales
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingService, setEditingService] = useState<CulturalService | null>(null)
   const [serviceToDelete, setServiceToDelete] = useState<CulturalService | null>(null)
-  
+
   // Modales de administración secundaria (selects)
   const [manageAreasOpen, setManageAreasOpen] = useState(false)
   const [manageProfilesOpen, setManageProfilesOpen] = useState(false)
-  
+
   // Estados para agregar opciones secundarias
   const [newAreaName, setNewAreaName] = useState("")
   const [newProfileName, setNewProfileName] = useState("")
@@ -152,9 +156,9 @@ export function ServiciosCulturalesPage() {
   const { showAlert } = useAlert()
 
   // Carga inicial de datos
-  const loadAllData = async () => {
+  const loadAllData = async (showMainSpinner = true) => {
     try {
-      setIsLoading(true)
+      if (showMainSpinner) setIsLoading(true)
       const [servicesData, areasData, profilesData] = await Promise.all([
         getCulturalServices(),
         getArtisticAreas(),
@@ -167,12 +171,12 @@ export function ServiciosCulturalesPage() {
       console.error(err)
       showAlert("error", "Error de Carga", err.message || "No se pudieron obtener los datos.")
     } finally {
-      setIsLoading(false)
+      if (showMainSpinner) setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    loadAllData()
+    loadAllData(true)
   }, [])
 
   const updateField = (key: keyof FormState, value: any) => {
@@ -187,7 +191,7 @@ export function ServiciosCulturalesPage() {
 
   const openEditDialog = async (service: CulturalService) => {
     try {
-      setIsLoading(true)
+      setFetchingServiceId(service.id)
       const data = await getCulturalServiceById(service.id)
       setEditingService(data)
       setForm({
@@ -216,7 +220,7 @@ export function ServiciosCulturalesPage() {
     } catch (err: any) {
       showAlert("error", "Error", "No se pudo cargar el detalle del servicio.")
     } finally {
-      setIsLoading(false)
+      setFetchingServiceId(null)
     }
   }
 
@@ -259,7 +263,7 @@ export function ServiciosCulturalesPage() {
       }
 
       setDialogOpen(false)
-      await loadAllData()
+      await loadAllData(false)
     } catch (err: any) {
       showAlert("error", "Error al guardar", err.message || "Ocurrió un error en el servidor.")
     } finally {
@@ -269,16 +273,16 @@ export function ServiciosCulturalesPage() {
 
   const handleDelete = async () => {
     if (!serviceToDelete) return
+    setIsDeleting(true)
     try {
-      setIsLoading(true)
       await deleteCulturalService(serviceToDelete.id)
       showAlert("success", "Eliminado", "Servicio cultural eliminado con éxito.")
       setServiceToDelete(null)
-      await loadAllData()
+      await loadAllData(false)
     } catch (err: any) {
       showAlert("error", "Error al eliminar", err.message || "Ocurrió un error en el servidor.")
     } finally {
-      setIsLoading(false)
+      setIsDeleting(false)
     }
   }
 
@@ -348,14 +352,21 @@ export function ServiciosCulturalesPage() {
   const filteredServices = useMemo(() => {
     return services.filter((item) => {
       const query = searchQuery.toLowerCase()
-      return (
+      const matchesSearch =
         item.nombre_artistico.toLowerCase().includes(query) ||
         item.contacto.toLowerCase().includes(query) ||
         (item.area_artistica?.nombre || "").toLowerCase().includes(query) ||
         (item.tipo_perfil_sc?.nombre || "").toLowerCase().includes(query)
-      )
+
+      const matchesArea =
+        selectedArea === "all" || String(item.id_area_artistica) === selectedArea
+
+      const matchesProfile =
+        selectedProfile === "all" || String(item.id_tipo_perfil_sc) === selectedProfile
+
+      return matchesSearch && matchesArea && matchesProfile
     })
-  }, [services, searchQuery])
+  }, [services, searchQuery, selectedArea, selectedProfile])
 
   return (
     <div className="space-y-6 p-4 sm:p-6 bg-slate-50 min-h-screen">
@@ -370,7 +381,7 @@ export function ServiciosCulturalesPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2 cursor-pointer border-gray-200" onClick={loadAllData} disabled={isLoading}>
+          <Button variant="outline" className="gap-2 cursor-pointer border-gray-200" onClick={() => loadAllData(true)} disabled={isLoading}>
             <RefreshCcw className="size-4 text-gray-500" />
             Actualizar
           </Button>
@@ -381,8 +392,8 @@ export function ServiciosCulturalesPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div className="relative flex-1">
+      <div className="flex flex-col md:flex-row gap-4 items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="relative flex-1 w-full">
           <Input
             placeholder="Buscar por nombre artístico, contacto, área artística..."
             value={searchQuery}
@@ -390,6 +401,52 @@ export function ServiciosCulturalesPage() {
             className="w-full bg-slate-50 border-slate-200 focus-visible:ring-[#60150F]"
           />
         </div>
+
+        <div className="w-full md:w-[240px]">
+          <Select value={selectedArea} onValueChange={setSelectedArea}>
+            <SelectTrigger className="w-full bg-slate-50 border-slate-200">
+              <SelectValue placeholder="Todas las Áreas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las Áreas</SelectItem>
+              {areas.map((a) => (
+                <SelectItem key={a.id} value={String(a.id)}>
+                  {a.nombre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="w-full md:w-[240px]">
+          <Select value={selectedProfile} onValueChange={setSelectedProfile}>
+            <SelectTrigger className="w-full bg-slate-50 border-slate-200">
+              <SelectValue placeholder="Todos los Perfiles" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los Perfiles</SelectItem>
+              {profiles.map((p) => (
+                <SelectItem key={p.id} value={String(p.id)}>
+                  {p.nombre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {(searchQuery || selectedArea !== "all" || selectedProfile !== "all") && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setSearchQuery("")
+              setSelectedArea("all")
+              setSelectedProfile("all")
+            }}
+            className="text-[#60150F] hover:bg-[#60150F]/5 text-xs font-semibold cursor-pointer shrink-0 rounded-xl w-full md:w-auto"
+          >
+            Limpiar filtros
+          </Button>
+        )}
       </div>
 
       <Card className="border-gray-200 shadow-sm overflow-hidden bg-white rounded-xl">
@@ -406,14 +463,14 @@ export function ServiciosCulturalesPage() {
               Cargando registros culturales...
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="w-full overflow-x-auto">
               <Table>
                 <TableHeader className="bg-slate-50">
                   <TableRow>
                     <TableHead className="w-[80px]">Foto</TableHead>
-                    <TableHead>Nombre Artístico</TableHead>
-                    <TableHead className="hidden md:table-cell">Área Artística</TableHead>
-                    <TableHead className="hidden sm:table-cell">Tipo Perfil</TableHead>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead className="hidden sm:table-cell">Área</TableHead>
+                    <TableHead className="hidden md:table-cell">Tipo</TableHead>
                     <TableHead className="hidden lg:table-cell">Contacto</TableHead>
                     <TableHead className="text-right pr-6">Acciones</TableHead>
                   </TableRow>
@@ -428,6 +485,7 @@ export function ServiciosCulturalesPage() {
                   ) : (
                     filteredServices.map((service) => (
                       <TableRow key={service.id} className="hover:bg-slate-50/50">
+                        {/* Columna Foto */}
                         <TableCell>
                           <div className="size-12 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0">
                             {service.url_foto ? (
@@ -445,20 +503,25 @@ export function ServiciosCulturalesPage() {
                             )}
                           </div>
                         </TableCell>
+
+                        {/* Columna Nombre */}
                         <TableCell className="font-semibold text-gray-800">
                           {service.nombre_artistico}
-                          <span className="block text-xs font-normal text-gray-500 md:hidden mt-0.5">
-                            {service.area_artistica?.nombre || "No especificada"}
-                          </span>
                         </TableCell>
-                        <TableCell className="hidden md:table-cell">
+
+                        {/* Columna Área */}
+                        <TableCell className="hidden sm:table-cell">
                           <Badge variant="outline" className="border-[#60150F]/20 bg-[#60150F]/5 text-[#60150F]">
                             {service.area_artistica?.nombre || "No especificada"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell text-gray-600">
+
+                        {/* Columna Tipo */}
+                        <TableCell className="hidden md:table-cell text-gray-600">
                           {service.tipo_perfil_sc?.nombre || "No especificado"}
                         </TableCell>
+
+                        {/* Columna Contacto */}
                         <TableCell className="hidden lg:table-cell">
                           <div className="text-xs text-gray-600 space-y-0.5">
                             <p className="font-medium text-gray-800">{service.contacto}</p>
@@ -466,23 +529,28 @@ export function ServiciosCulturalesPage() {
                             <p className="text-gray-500">{service.telefono}</p>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right pr-6">
-                          <div className="flex justify-end gap-1">
+
+                        {/* Columna Acciones (Aquí van tus botones de editar/eliminar) */}
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="icon"
+                              className="size-8 text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer"
                               onClick={() => openEditDialog(service)}
-                              className="size-8 text-[#d4a84b] hover:bg-amber-50 rounded-lg cursor-pointer"
-                              aria-label={`Editar ${service.nombre_artistico}`}
+                              disabled={fetchingServiceId !== null}
                             >
-                              <Pencil className="size-4" />
+                              {fetchingServiceId === service.id ? (
+                                <Loader2 className="size-4 animate-spin" />
+                              ) : (
+                                <Pencil className="size-4" />
+                              )}
                             </Button>
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="icon"
+                              className="size-8 text-red-600 border-red-200 hover:bg-red-50 cursor-pointer"
                               onClick={() => setServiceToDelete(service)}
-                              className="size-8 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
-                              aria-label={`Eliminar ${service.nombre_artistico}`}
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -718,6 +786,7 @@ export function ServiciosCulturalesPage() {
                     </div>
                   )}
                   <Input
+                    id="foto"
                     type="file"
                     accept="image/*"
                     onChange={(e) => updateField("fotoFile", e.target.files?.[0] || null)}
@@ -918,9 +987,17 @@ export function ServiciosCulturalesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-200 cursor-pointer">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white cursor-pointer">
-              Eliminar
+            <AlertDialogCancel disabled={isDeleting} className="border-slate-200 cursor-pointer">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleDelete()
+              }}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 text-white cursor-pointer gap-2"
+            >
+              {isDeleting && <Loader2 className="size-4 animate-spin" />}
+              {isDeleting ? "Eliminando..." : "Eliminar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
