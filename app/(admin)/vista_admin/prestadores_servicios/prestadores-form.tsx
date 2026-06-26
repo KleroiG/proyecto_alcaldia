@@ -13,7 +13,7 @@ import { AgenciaForm } from "./agencias/agencia-form"
 import { GuiaForm } from "./guias/guia-form"
 
 // Tipos
-import type { Prestador, Hotel, Restaurante, Agencia, Guia } from "./types"
+import type {Hotel, Restaurante, Agencia} from "./types"
 
 interface PrestadorFormProps {
     prestador?: any | null // Puede ser Prestador (Hotel/Rest/Agencia) o Guia

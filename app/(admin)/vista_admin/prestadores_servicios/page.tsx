@@ -16,7 +16,7 @@ import { fetchAllPrestadoresYGuias, savePrestadorService, saveGuiaService, delet
 import { Switch } from "@/components/ui/switch"
 import type { Prestador } from "../prestadores_servicios/types"
 
-// 🛠️ FUNCIÓN GLOBAL: Adaptación para renderizar imágenes de Google Drive en las vistas públicas/tablas
+
 const getDriveImage = (url: string) => {
     if (!url) return "";
     const match = url.match(/[-\w]{25,}/);
@@ -95,7 +95,7 @@ export default function AdminPrestadoresPage() {
     const handleSavePrestador = async (data: Partial<Prestador> & { imageFiles?: File[] }) => {
         try {
             await savePrestadorService(data, currentPrestador)
-            await loadData() // ✅ CORRECCIÓN: Volvemos a consultar a Laravel para traer el listado fresco
+            await loadData()
             setView("table")
             setCurrentPrestador(null)
         } catch (error) {
@@ -107,7 +107,7 @@ export default function AdminPrestadoresPage() {
     const handleSaveGuia = async (data: Partial<Guia>) => {
         try {
             await saveGuiaService(data, currentGuia)
-            await loadData() // ✅ CORRECCIÓN: Sincroniza los guías creados/editados de inmediato en la UI
+            await loadData()
             setView("table")
             setCurrentGuia(null)
         } catch (error) {
@@ -287,7 +287,7 @@ export function PrestadoresTable({
                     </Button>
                 </div>
             </div>
-            {/* 📊 SECCIÓN DE MÉTRICAS / TARJETAS DE DISEÑO */}
+            {/*  SECCIÓN DE MÉTRICAS / TARJETAS DE DISEÑO */}
             <br />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5 mr-5 ml-5">
                 <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm transition-all hover:shadow-md">
@@ -388,28 +388,72 @@ export function PrestadoresTable({
                 </div>
             ) : (
                 <div className="overflow-x-auto">
-                    <Table>
+                    <Table className="table-fixed w-full">
                         <TableHeader>
                             <TableRow className="bg-gray-50 hover:bg-gray-50">
-                                <TableHead className="w-[80px]">Imagen</TableHead>
-                                <TableHead className="w-[180px] md:w-[250px]">Nombre</TableHead>
-                                <TableHead className="hidden md:table-cell w-[120px]">Categoría</TableHead>
-                                <TableHead className="hidden lg:table-cell w-[150px]">Ubicación</TableHead>
-                                <TableHead className="hidden lg:table-cell w-[120px]">Contacto</TableHead>
-                                <TableHead className="text-center w-[120px]">Estado</TableHead>
-                                <TableHead className="text-right w-[100px] pr-8">Acciones</TableHead>
+                                <TableHead className="w-[70px]">Imagen</TableHead>
+
+                                <TableHead className="w-[260px]">
+                                    Nombre
+                                </TableHead>
+
+                                <TableHead className="hidden md:table-cell w-[120px]">
+                                    Categoría
+                                </TableHead>
+
+                                <TableHead className="hidden lg:table-cell w-[170px]">
+                                    Ubicación
+                                </TableHead>
+
+                                <TableHead className="hidden lg:table-cell w-[140px]">
+                                    Contacto
+                                </TableHead>
+
+                                <TableHead className="text-center w-[110px]">
+                                    Estado
+                                </TableHead>
+
+                                <TableHead className="text-right w-[120px] pr-8">
+                                    Acciones
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                Array.from({ length: 6 }).map((_, index) => (
+                                Array.from({ length: 7 }).map((_, index) => (
                                     <TableRow key={index}>
-                                        <TableCell><Skeleton className="h-12 w-12 rounded-lg" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-[180px]" /></TableCell>
-                                        <TableCell className="hidden md:table-cell"><Skeleton className="h-6 w-[100px] rounded-full" /></TableCell>
-                                        <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-[150px]" /></TableCell>
-                                        <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-[120px]" /></TableCell>
-                                        <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                                        <TableCell>
+                                            <Skeleton className="h-12 w-12 rounded-lg" />
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <Skeleton className="h-5 w-full max-w-[220px]" />
+                                        </TableCell>
+
+                                        <TableCell className="hidden md:table-cell">
+                                            <Skeleton className="h-6 w-24 rounded-full" />
+                                        </TableCell>
+
+                                        <TableCell className="hidden lg:table-cell">
+                                            <Skeleton className="h-4 w-full max-w-[160px]" />
+                                        </TableCell>
+
+                                        <TableCell className="hidden lg:table-cell">
+                                            <Skeleton className="h-4 w-full max-w-[120px]" />
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Skeleton className="h-6 w-11 rounded-full" />
+                                            </div>
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <div className="flex justify-end gap-2 pr-4">
+                                                <Skeleton className="h-8 w-8 rounded-md" />
+                                                <Skeleton className="h-8 w-8 rounded-md" />
+                                            </div>
+                                        </TableCell>
                                     </TableRow>
                                 ))
                             ) : filteredPrestadores.length === 0 ? (
@@ -428,7 +472,7 @@ export function PrestadoresTable({
                                         <TableCell>
                                             <div className="h-12 w-12 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
                                                 {prestador.imageUrl ? (
-                                                    /* ✅ ADAPTACIÓN: Renderizado seguro para enlaces de Google Drive en las miniaturas de la tabla */
+                                                    /* ADAPTACIÓN: Renderizado seguro para enlaces de Google Drive en las miniaturas de la tabla */
                                                     <img
                                                         src={getDriveImage(prestador.imageUrl)}
                                                         alt={prestador.nombre}

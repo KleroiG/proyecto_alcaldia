@@ -173,7 +173,6 @@ export function GaleriaForm({
 
                             return (
                                 <div key={fotoId} className="relative aspect-video rounded-xl overflow-hidden border border-gray-100 group shadow-sm bg-gray-50">
-                                    {/* ✅ ADAPTACIÓN CLAVE: Inyección de getDriveImage y políticas de renderizado */}
                                     <img 
                                         src={getDriveImage(srcUrl)} 
                                         alt="Establecimiento" 

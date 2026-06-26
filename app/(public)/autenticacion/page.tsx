@@ -2,18 +2,7 @@
 
 import React, { useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
-import {
-  AlertCircle,
-  ArrowRight,
-  Calendar,
-  CheckSquare,
-  Hash,
-  Lock,
-  Mail,
-  Phone,
-  Sun,
-  User,
-} from "lucide-react";
+import { AlertCircle, ArrowRight, Calendar, CheckSquare, Hash, Lock, Mail, Phone, Sun, User, } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { canAccessAdmin, clearSession, login, registerProfile } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";

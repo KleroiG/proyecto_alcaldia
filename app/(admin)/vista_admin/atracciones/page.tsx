@@ -175,7 +175,7 @@ export function AttractionsTable({
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <Table className="table-fixed w-full">
+        <Table className="min-w-[900px] table-auto">
           <TableHeader>
             <TableRow className="bg-gray-50 hover:bg-gray-50">
               <TableHead className="w-[80px]">Imagen</TableHead>
@@ -253,7 +253,7 @@ export function AttractionsTable({
                   </TableCell>
                   <TableCell>
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-gray-900 truncate">
                         {attraction.name}
                       </p>
                       <p className="text-sm text-gray-500 md:hidden">
