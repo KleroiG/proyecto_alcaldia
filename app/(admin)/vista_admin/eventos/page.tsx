@@ -76,16 +76,13 @@ export default function AdminEventsPage() {
     return (
       <div className="container mx-auto p-6">
         <EventForm
-          isOpen={true}
-          onOpenChange={(open) => {
-            if (!open) {
-              setView("table")
-              setCurrentEvent(null)
-            }
-          }}
           editingEvent={currentEvent}
           onSave={handleSaveEvent}
           isSaving={isSaving}
+          onBack={() => {
+            setView("table")
+            setCurrentEvent(null)
+          }}
         />
       </div>
     )

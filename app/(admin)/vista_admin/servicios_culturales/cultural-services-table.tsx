@@ -156,7 +156,7 @@ export function CulturalServicesTable({
                       <Skeleton className="h-3 w-[80px]" />
                     </div>
                   </TableCell>
-                  <TableCell><Skeleton className="h-8 w-16 ml-auto rounded-md" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-16 ml-auto rounded-md mr-5" /></TableCell>
                 </TableRow>
               ))
             ) : filteredServices.length === 0 ? (

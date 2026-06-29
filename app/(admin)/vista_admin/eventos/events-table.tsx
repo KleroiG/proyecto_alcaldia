@@ -177,7 +177,7 @@ export function EventsTable({ events, isLoading, onEdit, onDelete, onPostEvent, 
               <TableHead className="hidden md:table-cell w-[140px]">Dirección</TableHead>
               <TableHead className="hidden lg:table-cell w-[180px]">Fechas</TableHead>
               <TableHead className="w-[120px]">Estado</TableHead>
-              <TableHead className="text-right w-[140px] pr-8">Acciones</TableHead>
+              <TableHead className="text-right w-[140px] pr-12">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -190,7 +190,7 @@ export function EventsTable({ events, isLoading, onEdit, onDelete, onPostEvent, 
                   <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-30 rounded-full" /></TableCell>
                   <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-32" /></TableCell>
                   <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                  <TableCell><div className="flex justify-end gap-2 pr-4"><Skeleton className="h-8 w-8 rounded-md" /></div></TableCell>
+                  <TableCell><Skeleton className="h-8 w-16 rounded-md ml-14" /></TableCell>
                 </TableRow>
               ))
             ) : filteredEvents.length === 0 ? (
