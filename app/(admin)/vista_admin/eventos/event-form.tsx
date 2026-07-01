@@ -1,13 +1,15 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { CheckCircle2, Loader2, X, ArrowLeft, Upload, ImageIcon, CalendarDays, MapPin, User, Phone, Users, Landmark, FileText, ClipboardList, Images, } from "lucide-react"
+import { CheckCircle2, Loader2, X, ArrowLeft, Upload, ImageIcon, CalendarDays, MapPin, User, Phone, Users, Landmark, FileText, ClipboardList, Images } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAlert } from "@/components/global-alert"
+import { useConfirmation } from "@/components/confirmacion-alert"
 import { gdriveUrl, type EventPayload, type EventRecord } from "@/lib/events"
 
 export type EventFormState = Omit<EventPayload, "urlFoto" | "fotos" | "fotosAEliminar"> & {
@@ -15,6 +17,12 @@ export type EventFormState = Omit<EventPayload, "urlFoto" | "fotos" | "fotosAEli
   urlFotoExistente: string
   fotos: File[]
   fotosAEliminar: string[]
+}
+
+interface ImageFile {
+  id: string
+  file: File
+  preview: string
 }
 
 const emptyForm: EventFormState = {
@@ -47,27 +55,29 @@ export function EventForm({ editingEvent, onSave, isSaving, onBack }: EventFormP
   const [form, setForm] = useState<EventFormState>(emptyForm)
   const [dragActive, setDragActive] = useState(false)
   const [previewMainUrl, setPreviewMainUrl] = useState<string | null>(null)
-  const [galleryPreviews, setGalleryPreviews] = useState<{ file: File, url: string }[]>([])
+  
+  // Alertas y Confirmaciones
+  const { showAlert } = useAlert()
+  const { confirm } = useConfirmation()
+
+  // Estados unificados para la Galería (Mismo diseño de Atractivos)
+  const [newImages, setNewImages] = useState<ImageFile[]>([])
+  const [existingImages, setExistingImages] = useState<any[]>([])
+  const [dragGalleryActive, setDragGalleryActive] = useState(false)
 
   useEffect(() => {
     if (editingEvent) {
       setForm(toFormState(editingEvent))
+      setExistingImages(editingEvent.fotos || [])
     } else {
       setForm(emptyForm)
+      setExistingImages([])
     }
+    setNewImages([])
   }, [editingEvent])
 
   const updateField = (key: keyof EventFormState, value: any) => {
     setForm((current) => ({ ...current, [key]: value }))
-  }
-
-  const toggleFotoEliminar = (id: string) => {
-    setForm((prev) => ({
-      ...prev,
-      fotosAEliminar: prev.fotosAEliminar.includes(id)
-        ? prev.fotosAEliminar.filter((f) => f !== id)
-        : [...prev.fotosAEliminar, id],
-    }))
   }
 
   // --- Lógica Drag & Drop (Foto Principal) ---
@@ -107,34 +117,79 @@ export function EventForm({ editingEvent, onSave, isSaving, onBack }: EventFormP
     updateField("urlFotoExistente", "")
   }
 
-  // --- Lógica Galería Adicional ---
-  const handleGallerySelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    if (files.length > 0) {
-      const newPreviews = files.map(file => ({ file, url: URL.createObjectURL(file) }))
-      setGalleryPreviews(prev => [...prev, ...newPreviews])
-      updateField("fotos", [...form.fotos, ...files])
+  // --- LÓGICA DE GALERÍA UNIFICADA (Mismo diseño que Atractivos) ---
+  const handleGalleryDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === "dragenter" || e.type === "dragover") setDragGalleryActive(true)
+    else if (e.type === "dragleave") setDragGalleryActive(false)
+  }, [])
+
+  const handleGalleryDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragGalleryActive(false)
+
+    const allFiles = Array.from(e.dataTransfer.files)
+    const validFiles = allFiles.filter((file) => file.type.startsWith("image/"))
+
+    if (validFiles.length < allFiles.length) {
+      showAlert("warning", "Archivos omitidos", "Solo se permiten imágenes. Se ignoraron los formatos no válidos.")
+    }
+
+    if (validFiles.length > 0) {
+      addGalleryImages(validFiles)
+    }
+  }, [showAlert])
+
+  const handleGalleryFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      addGalleryImages(Array.from(e.target.files))
     }
   }
 
-  const removeGalleryPreview = (indexToRemove: number) => {
-    setGalleryPreviews(prev => {
-      const newPreviews = [...prev]
-      URL.revokeObjectURL(newPreviews[indexToRemove].url)
-      newPreviews.splice(indexToRemove, 1)
-      return newPreviews
+  const addGalleryImages = (files: File[]) => {
+    const newFiles = files.map((file) => ({
+      id: Math.random().toString(36).substring(7),
+      file,
+      preview: URL.createObjectURL(file),
+    }))
+    setNewImages((prev) => [...prev, ...newFiles])
+  }
+
+  const removeNewImage = (id: string) => {
+    setNewImages((prev) => {
+      const imageToRemove = prev.find((img) => img.id === id)
+      if (imageToRemove) URL.revokeObjectURL(imageToRemove.preview)
+      return prev.filter((img) => img.id !== id)
     })
-    const newFotos = [...form.fotos]
-    newFotos.splice(indexToRemove, 1)
-    updateField("fotos", newFotos)
+  }
+
+  const removeExistingImage = async (idFoto: string) => {
+    const ok = await confirm({
+      title: "Eliminar fotografía",
+      message: "Esta imagen se eliminará permanentemente al guardar los cambios.",
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "danger",
+    })
+
+    if (!ok) return
+
+    setExistingImages((prev) => prev.filter((img) => img.id !== idFoto))
+    updateField("fotosAEliminar", [...form.fotosAEliminar, idFoto])
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Extraemos los archivos físicos de la galería
+    const imageFiles = newImages.map((img) => img.file)
+
     const payload: EventPayload = {
       ...form,
       urlFoto: form.urlFoto ?? (form.urlFotoExistente || null),
-      fotos: form.fotos,
+      fotos: imageFiles, // Mandamos la nueva galería extraída
       fotosAEliminar: form.fotosAEliminar,
     }
     await onSave(payload)
@@ -219,188 +274,49 @@ export function EventForm({ editingEvent, onSave, isSaving, onBack }: EventFormP
 
         {/* Section 3: Detalles y Datos Administrativos */}
         <section className="space-y-6">
-          {/* Encabezado */}
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <span className="w-8 h-8 rounded-full bg-[#d4a84b]/20 text-[#d4a84b] flex items-center justify-center text-sm font-bold">3</span>
             Detalles y Contacto
           </h3>
-
           <div className="grid gap-5 md:grid-cols-2">
-
             {/* Organizador */}
-
             <div className="rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-all">
-              <Label
-                htmlFor="organizador"
-                className="flex items-center gap-2 mb-2"
-              >
-                <User className="w-4 h-4 text-[#d4a84b]" />
-                Organizador
-              </Label>
-
-              <Input
-                id="organizador"
-                placeholder="Secretaría de Cultura"
-                value={form.organizador}
-                onChange={(e) =>
-                  updateField("organizador", e.target.value)
-                }
-                className="focus-visible:ring-[#d4a84b]"
-              />
+              <Label htmlFor="organizador" className="flex items-center gap-2 mb-2"><User className="w-4 h-4 text-[#d4a84b]" />Organizador</Label>
+              <Input id="organizador" placeholder="Secretaría de Cultura" value={form.organizador} onChange={(e) => updateField("organizador", e.target.value)} className="focus-visible:ring-[#d4a84b]" />
             </div>
-
             {/* Contacto */}
-
             <div className="rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-all">
-              <Label
-                htmlFor="contacto"
-                className="flex items-center gap-2 mb-2"
-              >
-                <Phone className="w-4 h-4 text-green-600" />
-                Número de Contacto
-              </Label>
-
-              <Input
-                id="contacto"
-                inputMode="numeric"
-                maxLength={10}
-                placeholder="3001234567"
-                value={form.contacto}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, "")
-                  updateField("contacto", value)
-                }}
-                className="focus-visible:ring-green-500"
-              />
-
-              <p className="text-xs text-gray-500 mt-1">
-                Solo números.
-              </p>
+              <Label htmlFor="contacto" className="flex items-center gap-2 mb-2"><Phone className="w-4 h-4 text-green-600" />Número de Contacto</Label>
+              <Input id="contacto" inputMode="numeric" maxLength={10} placeholder="3001234567" value={form.contacto} onChange={(e) => updateField("contacto", e.target.value.replace(/\D/g, ""))} className="focus-visible:ring-green-500" />
+              <p className="text-xs text-gray-500 mt-1">Solo números.</p>
             </div>
-
             {/* Asistentes */}
-
             <div className="rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-all">
-              <Label
-                htmlFor="asistentes"
-                className="flex items-center gap-2 mb-2"
-              >
-                <Users className="w-4 h-4 text-blue-500" />
-                Asistentes Estimados
-              </Label>
-
-              <Input
-                id="asistentes"
-                type="number"
-                min={0}
-                step={1}
-                value={form.asistentesEstimados}
-                onChange={(e) =>
-                  updateField(
-                    "asistentesEstimados",
-                    Math.max(0, Number(e.target.value))
-                  )
-                }
-                className="focus-visible:ring-blue-500"
-              />
-
-              <p className="text-xs text-gray-500 mt-1">
-                No se permiten números negativos.
-              </p>
+              <Label htmlFor="asistentes" className="flex items-center gap-2 mb-2"><Users className="w-4 h-4 text-blue-500" />Asistentes Estimados</Label>
+              <Input id="asistentes" type="number" min={0} step={1} value={form.asistentesEstimados} onChange={(e) => updateField("asistentesEstimados", Math.max(0, Number(e.target.value)))} className="focus-visible:ring-blue-500" />
             </div>
-
             {/* Impacto */}
-
             <div className="rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-all">
-              <Label
-                htmlFor="impacto"
-                className="flex items-center gap-2 mb-2"
-              >
-                <Landmark className="w-4 h-4 text-emerald-600" />
-                Impacto Económico
-              </Label>
-
+              <Label htmlFor="impacto" className="flex items-center gap-2 mb-2"><Landmark className="w-4 h-4 text-emerald-600" />Impacto Económico</Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                  $
-                </span>
-
-                <Input
-                  id="impacto"
-                  type="number"
-                  min={0}
-                  className="pl-7 focus-visible:ring-emerald-500"
-                  value={form.impactoEconomico}
-                  onChange={(e) =>
-                    updateField(
-                      "impactoEconomico",
-                      Math.max(0, Number(e.target.value))
-                    )
-                  }
-                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <Input id="impacto" type="number" min={0} className="pl-7 focus-visible:ring-emerald-500" value={form.impactoEconomico} onChange={(e) => updateField("impactoEconomico", Math.max(0, Number(e.target.value)))} />
               </div>
             </div>
-
             {/* Descripción */}
-
             <div className="md:col-span-2 rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-all">
-              <Label
-                htmlFor="descripcion"
-                className="flex items-center gap-2 mb-2"
-              >
-                <FileText className="w-4 h-4 text-[#d4a84b]" />
-                Descripción del Evento
-                <span className="text-red-500">*</span>
-              </Label>
-
-              <Textarea
-                id="descripcion"
-                rows={4}
-                maxLength={500}
-                required
-                value={form.descripcion}
-                onChange={(e) =>
-                  updateField("descripcion", e.target.value)
-                }
-                className="resize-none focus-visible:ring-[#d4a84b]"
-              />
-
+              <Label htmlFor="descripcion" className="flex items-center gap-2 mb-2"><FileText className="w-4 h-4 text-[#d4a84b]" />Descripción del Evento <span className="text-red-500">*</span></Label>
+              <Textarea id="descripcion" rows={4} maxLength={500} required value={form.descripcion} onChange={(e) => updateField("descripcion", e.target.value)} className="resize-none focus-visible:ring-[#d4a84b]" />
               <div className="flex justify-between mt-2 text-xs text-gray-500">
                 <span>Describe brevemente el evento.</span>
-
-                <span>
-                  {form.descripcion.length}/500
-                </span>
+                <span>{form.descripcion.length}/500</span>
               </div>
             </div>
-
             {/* Observaciones */}
-
             <div className="md:col-span-2 rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-all">
-              <Label
-                htmlFor="observaciones"
-                className="flex items-center gap-2 mb-2"
-              >
-                <ClipboardList className="w-4 h-4 text-indigo-500" />
-                Observaciones Adicionales
-              </Label>
-
-              <Textarea
-                id="observaciones"
-                rows={3}
-                maxLength={300}
-                value={form.observaciones}
-                onChange={(e) =>
-                  updateField("observaciones", e.target.value)
-                }
-                className="resize-none focus-visible:ring-indigo-500"
-              />
-
-              <div className="text-right text-xs text-gray-500 mt-2">
-                {form.observaciones.length}/300
-              </div>
+              <Label htmlFor="observaciones" className="flex items-center gap-2 mb-2"><ClipboardList className="w-4 h-4 text-indigo-500" />Observaciones Adicionales</Label>
+              <Textarea id="observaciones" rows={3} maxLength={300} value={form.observaciones} onChange={(e) => updateField("observaciones", e.target.value)} className="resize-none focus-visible:ring-indigo-500" />
             </div>
-
           </div>
         </section>
 
@@ -408,146 +324,134 @@ export function EventForm({ editingEvent, onSave, isSaving, onBack }: EventFormP
         <section>
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <span className="w-8 h-8 rounded-full bg-[#d4a84b]/20 text-[#d4a84b] flex items-center justify-center text-sm font-bold">4</span>
-            Foto Principal (Afiche / Banner)
+            Multimedia del Evento
           </h3>
 
-          <div className="grid gap-6 md:grid-cols-2 mb-8">
-            {/* Dropzone */}
-            <div
-              onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
-              className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors flex flex-col items-center justify-center min-h-[200px] ${dragActive ? "border-[#10b981] bg-[#10b981]/5" : "border-gray-300 hover:border-gray-400"}`}
-            >
-              <input type="file" accept="image/*" onChange={handleFileSelect} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                <Upload className="h-6 w-6 text-gray-400" />
+          <div className="mb-6">
+            <Label className="text-base font-semibold text-gray-800 mb-3 block">Foto Principal (Afiche / Banner)</Label>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div
+                onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
+                className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors flex flex-col items-center justify-center min-h-[200px] ${dragActive ? "border-[#10b981] bg-[#10b981]/5" : "border-gray-300 hover:border-gray-400"}`}
+              >
+                <input type="file" accept="image/*" onChange={handleFileSelect} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                  <Upload className="h-6 w-6 text-gray-400" />
+                </div>
+                <p className="text-sm font-medium text-gray-700">Arrastra y suelta el afiche principal aquí</p>
+                <p className="text-xs text-gray-500 mt-1">o haz clic para buscar en tu equipo</p>
               </div>
-              <p className="text-sm font-medium text-gray-700">Arrastra y suelta el afiche principal aquí</p>
-              <p className="text-xs text-gray-500 mt-1">o haz clic para buscar en tu equipo</p>
-            </div>
 
-            {/* Preview Area */}
-            <div className="border border-gray-200 rounded-lg p-4 bg-slate-50 flex items-center justify-center min-h-[200px] flex-col">
-              {(previewMainUrl || form.urlFotoExistente || (editingEvent?.imageUrl && !form.urlFoto)) ? (
-                <div className="relative group w-full h-full max-h-[250px] rounded-lg overflow-hidden shadow-sm">
-                  {previewMainUrl && <div className="absolute top-2 left-2 bg-[#10b981] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm z-10">NUEVA</div>}
-                  <img
-                    src={previewMainUrl || gdriveUrl(form.urlFotoExistente || editingEvent?.imageUrl || "")}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button type="button" onClick={removeMainImage} className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow-lg">
-                      <X className="h-5 w-5" />
-                    </button>
+              <div className="border border-gray-200 rounded-lg p-4 bg-slate-50 flex items-center justify-center min-h-[200px] flex-col">
+                {(previewMainUrl || form.urlFotoExistente || (editingEvent?.imageUrl && !form.urlFoto)) ? (
+                  <div className="relative group w-full h-full max-h-[250px] rounded-lg overflow-hidden shadow-sm">
+                    {previewMainUrl && <div className="absolute top-2 left-2 bg-[#10b981] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm z-10">NUEVA</div>}
+                    <img
+                      src={previewMainUrl || gdriveUrl(form.urlFotoExistente || editingEvent?.imageUrl || "")}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button type="button" onClick={removeMainImage} className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow-lg">
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="text-center text-gray-400">
-                  <ImageIcon className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No hay afiche seleccionado</p>
-                </div>
-              )}
+                ) : (
+                  <div className="text-center text-gray-400">
+                    <ImageIcon className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No hay afiche seleccionado</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <h3 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            Galería Adicional (Opcional)
-          </h3>
+          <hr className="my-8 border-gray-200" />
 
-          <div className="space-y-4 rounded-lg border border-gray-200 bg-slate-50 p-4">
-            {/* Galería Existente */}
-            {editingEvent && editingEvent.fotos.length > 0 && (
-              <div className="space-y-4 mb-6">
+          {/* GALERÍA DE IMÁGENES UNIFICADA (Mismo diseño de Atractivos) */}
+          <div>
+            <Label className="flex items-center gap-2 text-base font-semibold text-gray-800 mb-4">
+              <Images className="w-5 h-5 text-indigo-500" />
+              Galería de Imágenes Adicionales
+            </Label>
+            
+            <div
+              onDragEnter={handleGalleryDrag} onDragLeave={handleGalleryDrag} onDragOver={handleGalleryDrag} onDrop={handleGalleryDrop}
+              className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragGalleryActive ? "border-[#10b981] bg-[#10b981]/5" : "border-gray-300 hover:border-gray-400"}`}
+            >
+              <input
+                type="file" multiple accept="image/*" onChange={handleGalleryFileSelect}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                aria-label="Seleccionar imágenes"
+              />
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Upload className="h-6 w-6 text-gray-400" />
+                </div>
                 <div>
-                  <h4 className="flex items-center gap-2 text-base font-semibold text-gray-800">
-                    <Images className="w-5 h-5 text-emerald-600" />
-                    Galería Guardada
-                  </h4>
-
-                  <p className="text-sm text-gray-500 mt-1">
-                    Haz clic en la <X className="inline h-3 w-3" /> para eliminar una imagen.
-                  </p>
+                  <p className="text-sm font-medium text-gray-700">Arrastra y suelta imágenes aquí para la galería</p>
+                  <p className="text-xs text-gray-500 mt-1">o haz clic para seleccionar múltiples archivos</p>
                 </div>
+              </div>
+            </div>
 
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 md:grid-cols-5">
-                  {editingEvent.fotos.map((foto) => (
-                    <div
-                      key={foto.id}
-                      className="border border-gray-200 rounded-lg p-2 bg-slate-50 flex items-center justify-center"
-                    >
-                      <div className="relative group w-full aspect-square rounded-lg overflow-hidden shadow-sm">
+            {(existingImages.length > 0 || newImages.length > 0) && (
+              <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 bg-slate-50 p-4 border border-gray-200 rounded-lg">
 
-                        {/* Badge */}
-                        <div className="absolute top-2 left-2 bg-[#10b981] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm z-10">
-                          GUARDADA
-                        </div>
-
-                        <img
-                          src={gdriveUrl(foto.url)}
-                          alt=""
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            type="button"
-                            onClick={() => toggleFotoEliminar(foto.id)}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow-lg">
-                            <X className="h-5 w-5" />
-                          </button>
-
-                        </div>
-
-                      </div>
+                {/* 1. Renderizar imágenes que vienen de la Base de Datos */}
+                {existingImages.map((img) => (
+                  <div key={`existing-${img.id}`} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                    <img
+                      src={gdriveUrl(img.url || "")}
+                      alt="Imagen guardada"
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute top-2 left-2 bg-[#10b981] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm z-10">
+                      GUARDADA
                     </div>
-                  ))}
-                </div>
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-2">
+                      <button
+                        type="button"
+                        onClick={() => removeExistingImage(img.id)}
+                        className="w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+                        title="Eliminar de la base de datos"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* 2. Renderizar imágenes nuevas a subir */}
+                {newImages.map((image, index) => (
+                  <div key={`new-${image.id}-${index}`} className="relative group aspect-square rounded-lg overflow-hidden border-2 border-[#10b981] shadow-sm">
+                    <div className="absolute top-1 left-1 bg-[#10b981] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm z-10">
+                      NUEVA
+                    </div>
+                    <img
+                      src={image.preview}
+                      alt={`Preview nueva ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-2">
+                      <button
+                        type="button"
+                        onClick={() => removeNewImage(image.id)}
+                        className="w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
-
-            {/* Agregar Nuevas a Galería */}
-            <div className="space-y-5">
-              <div>
-                <Label className="flex items-center gap-2 text-base font-semibold text-gray-800">
-                  <Images className="w-5 h-5 text-indigo-500" />
-                  Galería del Evento
-                </Label>
-                <p className="text-sm text-gray-500 mt-1">
-                  Agrega fotografías adicionales para mostrar los mejores momentos del evento.
-                </p>
-              </div>
-              <label
-                className="group relative flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gradient-to-br from-gray-50 to-white p-10 transition-all hover:border-indigo-400 hover:bg-indigo-50/30 hover:shadow-lg"
-              >
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleGallerySelect}
-                  className="hidden"
-                />
-                <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                  <Images className="w-8 h-8 text-indigo-600" />
-                </div>
-
-                <h4 className="font-semibold text-gray-800 text-lg">
-                  Arrastra imágenes aquí
-                </h4>
-                <p className="text-sm text-gray-500 mt-2">
-                  o haz clic para seleccionar archivos
-                </p>
-                <div className="mt-5 text-xs text-gray-400">
-                  PNG · JPG · JPEG · WEBP
-                </div>
-              </label>
-            </div>
           </div>
-
         </section>
-
 
         {/* Acciones Finales */}
         <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
