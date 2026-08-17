@@ -21,16 +21,13 @@ export default function PrestadoresPage() {
 function PrestadoresContent() {
   const searchParams = useSearchParams()
 
-  // Estados de control asíncronos obligatorios
   const [providers, setProviders] = useState<Provider[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Estados de filtrado local
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Sincronizar categoría inicial desde la URL si existe
   useEffect(() => {
     const categoryParam = searchParams.get("categoria")
     if (categoryParam) {
@@ -38,7 +35,6 @@ function PrestadoresContent() {
     }
   }, [searchParams])
 
-  // Petición única de datos al Backend unificado (BFF)
   useEffect(() => {
     const fetchPrestadores = async () => {
       try {
@@ -54,18 +50,12 @@ function PrestadoresContent() {
         const json = await response.json()
 
         if (json.success && json.data) {
-          // 1. Filtramos la data validando de forma flexible tanto 'isvisible' como 'isVisible'
           const visibleProviders = json.data.filter((item: any) => {
             if (!item) return false;
-            
-            // 🔍 SOLUCCIÓN: Comprobamos de manera segura ambas variantes de casing (isvisible e isVisible)
             const visibleValue = item.isvisible !== undefined ? item.isvisible : item.isVisible;
-
-            // Retornamos true si es explícitamente true, 1, o si viene indefinido (retrocompatibilidad)
             return visibleValue === undefined || visibleValue === true || visibleValue === 1 || visibleValue === "1";
           });
 
-          // 2. Normalizamos imageUrl con gdriveUrl y guardamos
           const mapped = visibleProviders.map((item: any) => ({
             ...item,
             imageUrl: gdriveUrl(item.imageUrl || item.url_foto || ""),
@@ -84,14 +74,14 @@ function PrestadoresContent() {
     fetchPrestadores()
   }, [])
 
-  // Diccionario inverso para mapear slugs de URL/Filtros con las categorías del Backend
+  // Añadimos "guias" al mapa de categorías
   const categoryMap: Record<string, string> = {
     hoteles: "Hotel",
     restaurantes: "Restaurante",
     agencias: "Agencia",
+    guias: "Guia",
   }
 
-  // Filtrado reactivo en memoria (Alta eficiencia en Front una vez descargados los datos)
   const filteredProviders = providers.filter((provider) => {
     const isVisibleValue = provider.isvisible !== undefined ? provider.isvisible : (provider as any).isVisible;
     const isHidden = isVisibleValue === false || isVisibleValue === 0 || isVisibleValue === "0";
@@ -99,8 +89,10 @@ function PrestadoresContent() {
 
     const matchesCategory =
       selectedCategory === "all" || provider.category === categoryMap[selectedCategory]
-    const matchesSearch =
-      provider.name.toLowerCase().includes(searchQuery.toLowerCase())
+    
+    // Mejoramos la búsqueda para que también contemple el apellido de los guías
+    const fullName = `${provider.name || ""} ${provider.apellido || ""}`.trim().toLowerCase()
+    const matchesSearch = fullName.includes(searchQuery.toLowerCase())
       
     return matchesCategory && matchesSearch
   })
@@ -115,10 +107,10 @@ function PrestadoresContent() {
               Sogamoso Ciudad del Sol
             </span>
             <h1 className="text-3xl font-bold text-gray-900 md:text-4xl">
-              Prestadores de Servicios Turísticos
+              Prestadores de Servicios Turísticos y Guías
             </h1>
             <p className="mt-2 text-gray-600">
-              Consulte los establecimientos autorizados y certificados en el municipio de Sogamoso.
+              Consulte los establecimientos autorizados y profesionales certificados en el municipio de Sogamoso.
             </p>
           </div>
 
@@ -161,7 +153,7 @@ function PrestadoresContent() {
 
               {filteredProviders.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <h3 className="text-lg font-medium text-gray-900">No se encontraron prestadores</h3>
+                  <h3 className="text-lg font-medium text-gray-900">No se encontraron resultados</h3>
                   <p className="mt-1 text-sm text-gray-500">
                     Pruebe cambiando los términos de búsqueda o de categoría.
                   </p>

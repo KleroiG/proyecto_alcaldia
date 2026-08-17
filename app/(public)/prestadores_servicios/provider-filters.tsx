@@ -9,6 +9,7 @@ const categories = [
   { value: "hoteles", label: "Hoteles" },
   { value: "restaurantes", label: "Restaurantes" },
   { value: "agencias", label: "Agencias" },
+  { value: "guias", label: "Guías Turísticos" },
 ]
 
 interface ProviderFiltersProps {
